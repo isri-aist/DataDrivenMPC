@@ -66,3 +66,5 @@ public:
   ModelPtr model_ptr_ = nullptr;
 };
 } // namespace DDMPC
+
+#include <DDMPC/StateEq.hpp>

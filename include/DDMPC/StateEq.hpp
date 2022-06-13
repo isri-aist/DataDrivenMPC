@@ -42,6 +42,8 @@ template<int StateDim, int InputDim>
 typename StateEq<StateDim, InputDim>::StateDimVector StateEq<StateDim, InputDim>::calc(const StateDimVector & x,
                                                                                        const InputDimVector & u)
 {
-  return toEigenMatrix(
-      model_ptr_->forward(toTorchTensor(x.template cast<float>()), toTorchTensor(u.template cast<float>())));
+  torch::Tensor x_tensor = toTorchTensor(x.transpose().template cast<float>());
+  torch::Tensor u_tensor = toTorchTensor(u.transpose().template cast<float>());
+  torch::Tensor next_x_tensor = model_ptr_->forward(x_tensor, u_tensor);
+  return toEigenMatrix(next_x_tensor).template cast<double>();
 }
