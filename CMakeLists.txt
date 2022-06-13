@@ -9,6 +9,10 @@ find_package(catkin REQUIRED COMPONENTS
   nmpc_ddp
   )
 
+# Eigen
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
 catkin_package(
   CATKIN_DEPENDS
   roscpp
