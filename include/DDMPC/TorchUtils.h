@@ -13,9 +13,9 @@ using MatrixXfRowMajor = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Ei
 using MatrixXdRowMajor = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
 /*! \brief Convert to torch::Tensor.
- *  \param mat input (Eigen::MatrixXf)
- *
- *  Even if the matrix of colum major is passed as an argument, it is automatically converted to row major.
+    \param mat input (Eigen::MatrixXf)
+
+    Even if the matrix of colum major is passed as an argument, it is automatically converted to row major.
  */
 inline torch::Tensor toTorchTensor(const MatrixXfRowMajor & mat)
 {
@@ -23,7 +23,7 @@ inline torch::Tensor toTorchTensor(const MatrixXfRowMajor & mat)
 }
 
 /*! \brief Convert to Eigen::MatrixXf.
- *  \param tensor input (torch::Tensor)
+    \param tensor input (torch::Tensor)
  */
 inline Eigen::MatrixXf toEigenMatrix(const torch::Tensor & tensor)
 {

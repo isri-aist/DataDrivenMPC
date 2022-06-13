@@ -13,9 +13,9 @@ class Data
 {
 public:
   /*! \brief Constructor.
-   *  \param state single data tensor of current state
-   *  \param input single data tensor of current input
-   *  \param next_state single data tensor of next state
+      \param state single data tensor of current state
+      \param input single data tensor of current input
+      \param next_state single data tensor of next state
    */
   Data(const torch::Tensor & state, const torch::Tensor & input, const torch::Tensor & next_state)
   : state_(state), input_(input), next_state_(next_state)
@@ -23,13 +23,13 @@ public:
   }
 
 public:
-  /*! \brief Single data tensor of current state. */
+  //! Single data tensor of current state
   torch::Tensor state_;
 
-  /*! \brief Single data tensor of current input. */
+  //! Single data tensor of current input
   torch::Tensor input_;
 
-  /*! \brief Single data tensor of next state. */
+  //! Single data tensor of next state
   torch::Tensor next_state_;
 };
 
@@ -41,9 +41,9 @@ class Dataset : public torch::data::datasets::Dataset<Dataset, Example>
 {
 public:
   /*! \brief Constructor.
-   *  \param state all data tensor of current state
-   *  \param input all data tensor of current input
-   *  \param next_state all data tensor of next state
+      \param state all data tensor of current state
+      \param input all data tensor of current input
+      \param next_state all data tensor of next state
    */
   explicit Dataset(const torch::Tensor & state, const torch::Tensor & input, const torch::Tensor & next_state)
   : state_(std::move(state)), input_(std::move(input)), next_state_(std::move(next_state))
@@ -65,25 +65,25 @@ public:
   }
 
 protected:
-  /*! \brief All data tensor of current state. */
+  //! All data tensor of current state
   torch::Tensor state_;
 
-  /*! \brief All data tensor of current input. */
+  //! All data tensor of current input
   torch::Tensor input_;
 
-  /*! \brief All data tensor of next state. */
+  //! All data tensor of next state
   torch::Tensor next_state_;
 
-  /*! \brief Dataset size. */
+  //! Dataset size
   size_t size_;
 };
 
 /*! \brief Make dataset.
- *  \param state all data tensor of current state
- *  \param input all data tensor of current input
- *  \param next_state all data tensor of next state
- *  \param[out] train_dataset training dataset
- *  \param[out] test_dataset test dataset
+    \param state all data tensor of current state
+    \param input all data tensor of current input
+    \param next_state all data tensor of next state
+    \param[out] train_dataset training dataset
+    \param[out] test_dataset test dataset
  */
 void makeDataset(const torch::Tensor & state,
                  const torch::Tensor & input,
@@ -92,11 +92,11 @@ void makeDataset(const torch::Tensor & state,
                  std::shared_ptr<Dataset> & test_dataset);
 
 /*! \brief Make batch tensors.
- *  \param batch batch from data loader
- *  \param device device to which tensors belong
- *  \param[out] b_state batch tensor of current state
- *  \param[out] b_next_state batch tensor of next state
- *  \param[out] b_input batch tensor of input
+    \param batch batch from data loader
+    \param device device to which tensors belong
+    \param[out] b_state batch tensor of current state
+    \param[out] b_next_state batch tensor of next state
+    \param[out] b_input batch tensor of input
  */
 void makeBatchTensor(const std::vector<Example> & batch,
                      const torch::Device & device,
