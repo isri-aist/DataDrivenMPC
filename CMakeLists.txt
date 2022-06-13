@@ -13,6 +13,11 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
+# Torch
+message("-- LIBTORCH_PATH: ${LIBTORCH_PATH}")
+list(APPEND CMAKE_PREFIX_PATH ${LIBTORCH_PATH})
+find_package(Torch REQUIRED)
+
 catkin_package(
   CATKIN_DEPENDS
   roscpp

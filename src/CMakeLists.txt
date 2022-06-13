@@ -6,5 +6,5 @@ target_include_directories(DDMPC PUBLIC
   ${catkin_INCLUDE_DIRS}
   )
 target_link_libraries(DDMPC PUBLIC
-  ${catkin_LIBRARIES}
+  ${TORCH_LIBRARIES} ${catkin_LIBRARIES}
   )

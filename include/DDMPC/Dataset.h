@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include <torch/torch.h>
 
 namespace DDMPC
@@ -16,7 +18,7 @@ public:
    *  \param next_state single data tensor of next state
    */
   Data(const torch::Tensor & state, const torch::Tensor & input, const torch::Tensor & next_state)
-  : state_(state), input_(input) next_state_(next_state),
+  : state_(state), input_(input), next_state_(next_state)
   {
   }
 
@@ -85,8 +87,9 @@ protected:
  */
 void makeDataset(const torch::Tensor & state,
                  const torch::Tensor & input,
-                 const torch::Tensor & next_state std::shared_ptr<StateEqDataset> & train_dataset,
-                 std::shared_ptr<StateEqDataset> & test_dataset);
+                 const torch::Tensor & next_state,
+                 std::shared_ptr<Dataset> & train_dataset,
+                 std::shared_ptr<Dataset> & test_dataset);
 
 /*! \brief Make batch tensors.
  *  \param batch batch from data loader
@@ -95,7 +98,7 @@ void makeDataset(const torch::Tensor & state,
  *  \param[out] b_next_state batch tensor of next state
  *  \param[out] b_input batch tensor of input
  */
-void makeBatchTensor(const std::vector<StateEqExample> & batch,
+void makeBatchTensor(const std::vector<Example> & batch,
                      const torch::Device & device,
                      torch::Tensor & b_state,
                      torch::Tensor & b_input,

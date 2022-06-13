@@ -1,13 +1,14 @@
 /* Author: Masaki Murooka */
 
-#include <Dataset.h>
+#include <DDMPC/Dataset.h>
 
 using namespace DDMPC;
 
 void DDMPC::makeDataset(const torch::Tensor & state,
                         const torch::Tensor & input,
-                        const torch::Tensor & next_state std::shared_ptr<StateEqDataset> & train_dataset,
-                        std::shared_ptr<StateEqDataset> & test_dataset)
+                        const torch::Tensor & next_state,
+                        std::shared_ptr<Dataset> & train_dataset,
+                        std::shared_ptr<Dataset> & test_dataset)
 {
   // Make dataset for train and test
   int n_all = state.size(0);
@@ -16,10 +17,10 @@ void DDMPC::makeDataset(const torch::Tensor & state,
   torch::Tensor perm = torch::randperm(n_all, torch::kInt64);
   torch::Tensor train_perm = perm.index({at::indexing::Slice(0, n_train)});
   torch::Tensor test_perm = perm.index({at::indexing::Slice(n_train, n_train + n_test)});
-  train_dataset = std::make_shared<StateEqDataset>(state.index({train_perm}), input.index({train_perm}),
-                                                   next_state.index({train_perm}));
-  test_dataset = std::make_shared<StateEqDataset>(state.index({test_perm}), input.index({test_perm}),
-                                                  next_state.index({test_perm}));
+  train_dataset =
+      std::make_shared<Dataset>(state.index({train_perm}), input.index({train_perm}), next_state.index({train_perm}));
+  test_dataset =
+      std::make_shared<Dataset>(state.index({test_perm}), input.index({test_perm}), next_state.index({test_perm}));
 
   // Print debug information
   constexpr bool debug = true;
@@ -31,7 +32,7 @@ void DDMPC::makeDataset(const torch::Tensor & state,
   }
 }
 
-void DDMPC::makeBatchTensor(const std::vector<StateEqExample> & batch,
+void DDMPC::makeBatchTensor(const std::vector<Example> & batch,
                             const torch::Device & device,
                             torch::Tensor & b_state,
                             torch::Tensor & b_input,
@@ -41,7 +42,7 @@ void DDMPC::makeBatchTensor(const std::vector<StateEqExample> & batch,
 
   // Allocate batch tensors
   {
-    const auto & data = static_cast<StateEqData>(batch[0]);
+    const auto & data = static_cast<Data>(batch[0]);
     b_state = torch::empty({batch_size, data.state_.size(1)});
     b_input = torch::empty({batch_size, data.input_.size(1)});
     b_next_state = torch::empty({batch_size, data.next_state_.size(1)});
@@ -50,7 +51,7 @@ void DDMPC::makeBatchTensor(const std::vector<StateEqExample> & batch,
   // Set batch tensors
   for(int i = 0; i < batch_size; i++)
   {
-    const auto & data = static_cast<StateEqData>(batch[i]);
+    const auto & data = static_cast<Data>(batch[i]);
     b_state.index({i}) = data.state_;
     b_input.index({i}) = data.input_;
     b_next_state.index({i}) = data.next_state_;
