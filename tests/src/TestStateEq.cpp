@@ -7,13 +7,14 @@
 
 TEST(TestStateEq, Test1)
 {
-  constexpr int state_dim = 2;
-  constexpr int input_dim = 1;
-  DDMPC::StateEq<state_dim, input_dim> state_eq;
+  int state_dim = 2;
+  int input_dim = 1;
+  DDMPC::StateEq state_eq(state_dim, input_dim);
 
-  Eigen::Matrix<double, state_dim, 1> x = Eigen::Matrix<double, state_dim, 1>::Random();
-  Eigen::Matrix<double, input_dim, 1> u = Eigen::Matrix<double, input_dim, 1>::Random();
-  Eigen::Matrix<double, state_dim, 1> next_x = state_eq.calc(x, u);
+  Eigen::VectorXd x = Eigen::VectorXd::Random(state_dim);
+  Eigen::VectorXd u = Eigen::VectorXd::Random(input_dim);
+  Eigen::VectorXd next_x = state_eq.calc(x, u);
+  EXPECT_FALSE(next_x.array().isNaN().any());
   EXPECT_GT((next_x - x).norm(), 1e-8);
 }
 

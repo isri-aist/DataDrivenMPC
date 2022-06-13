@@ -7,28 +7,20 @@
 
 namespace DDMPC
 {
-/*! \brief Class of state equation based on neural network model.
-    \tparam StateDim state dimension
-    \tparam InputDim input dimension
-*/
-template<int StateDim, int InputDim>
+/*! \brief Class of state equation based on neural network model. */
 class StateEq
 {
 public:
-  /** \brief Type of vector of state dimension. */
-  using StateDimVector = Eigen::Matrix<double, StateDim, 1>;
-
-  /** \brief Type of vector of input dimension. */
-  using InputDimVector = Eigen::Matrix<double, InputDim, 1>;
-
   /*! \brief Class of neural network model for state equation. */
   class Model : public torch::nn::Module
   {
   public:
     /*! \brief Constructor.
-        \param middle_dim dimension of middle layer
+        \param state_dim state dimension
+        \param input_dim input dimension
+        \param middle_dim middle layer dimension
      */
-    Model(int middle_dim = 100);
+    Model(int state_dim, int input_dim, int middle_dim = 100);
 
     /*! \brief Forward model.
         \param x current state
@@ -38,6 +30,12 @@ public:
     torch::Tensor forward(torch::Tensor & x, torch::Tensor & u);
 
   public:
+    //! State dimension
+    const int state_dim_;
+
+    //! Input dimension
+    const int input_dim_;
+
     //! Linear layers
     torch::nn::Linear linear1_ = nullptr;
     torch::nn::Linear linear2_ = nullptr;
@@ -51,15 +49,30 @@ public:
   TORCH_MODULE_IMPL(ModelPtr, Model);
 
 public:
-  /*! \brief Constructor. */
-  StateEq() : model_ptr_(ModelPtr()) {}
+  /*! \brief Constructor.
+      \param state_dim state dimension
+      \param input_dim input dimension
+   */
+  StateEq(int state_dim, int input_dim) : model_ptr_(ModelPtr(state_dim, input_dim)) {}
 
   /*! \brief Calculate next state.
       \param x current state
       \param u current input
       \returns next state
    */
-  StateDimVector calc(const StateDimVector & x, const InputDimVector & u);
+  Eigen::VectorXd calc(const Eigen::VectorXd & x, const Eigen::VectorXd & u);
+
+  /*! \brief Get state dimension. */
+  inline int stateDim() const
+  {
+    return model_ptr_->state_dim_;
+  }
+
+  /*! \brief Get input dimension. */
+  inline int inputDim() const
+  {
+    return model_ptr_->input_dim_;
+  }
 
 public:
   //! Model pointer
