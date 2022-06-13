@@ -48,8 +48,8 @@ void Training::run(const std::shared_ptr<StateEq> & state_eq,
     std::cout << "  - device_type: " << device_->type() << std::endl;
   }
 
-  std::ofstream ofs("/tmp/train.dat");
-  ofs << "# epoch train_loss test_loss" << std::endl;
+  std::ofstream ofs("/tmp/DataDrivenMPCTraining.txt");
+  ofs << "epoch train_loss test_loss" << std::endl;
 
   float test_loss_ave_min = std::numeric_limits<float>::max();
   for(int i_epoch = 0; i_epoch < num_epoch; i_epoch++)
@@ -64,8 +64,8 @@ void Training::run(const std::shared_ptr<StateEq> & state_eq,
 
       // Forward, calculate loss, and optimize
       model_ptr->zero_grad();
-      torch::Tensor b_next_state_pred = model_ptr->forward(b_state, b_next_state_gt);
-      torch::Tensor loss = torch::nn::functional::mse_loss(b_next_state_pred, b_input,
+      torch::Tensor b_next_state_pred = model_ptr->forward(b_state, b_input);
+      torch::Tensor loss = torch::nn::functional::mse_loss(b_next_state_pred, b_next_state_gt,
                                                            torch::nn::functional::MSELossFuncOptions(torch::kSum));
       loss.backward();
       optimizer.step();
@@ -85,8 +85,8 @@ void Training::run(const std::shared_ptr<StateEq> & state_eq,
       makeBatchTensor(batch, *device_, b_state, b_input, b_next_state_gt);
 
       // Forward and calculate loss
-      torch::Tensor b_next_state_pred = model_ptr->forward(b_state, b_next_state_gt);
-      torch::Tensor loss = torch::nn::functional::mse_loss(b_next_state_pred, b_input,
+      torch::Tensor b_next_state_pred = model_ptr->forward(b_state, b_input);
+      torch::Tensor loss = torch::nn::functional::mse_loss(b_next_state_pred, b_next_state_gt,
                                                            torch::nn::functional::MSELossFuncOptions(torch::kSum));
       test_loss_ave += loss.to(torch::DeviceType::CPU).item<float>();
     }

@@ -43,9 +43,9 @@ void DDMPC::makeBatchTensor(const std::vector<Example> & batch,
   // Allocate batch tensors
   {
     const auto & data = static_cast<Data>(batch[0]);
-    b_state = torch::empty({batch_size, data.state_.size(1)});
-    b_input = torch::empty({batch_size, data.input_.size(1)});
-    b_next_state = torch::empty({batch_size, data.next_state_.size(1)});
+    b_state = torch::empty({batch_size, data.state_.size(0)});
+    b_input = torch::empty({batch_size, data.input_.size(0)});
+    b_next_state = torch::empty({batch_size, data.next_state_.size(0)});
   }
 
   // Set batch tensors
