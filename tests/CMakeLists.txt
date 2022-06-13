@@ -1,4 +1,5 @@
 set(DDMPC_gtest_list
+  TestTorchUtils
   TestStateEq
   TestDataset
   TestTraining
