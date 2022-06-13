@@ -13,8 +13,7 @@ StateEq::Model::Model(int state_dim, int input_dim, int middle_dim) : state_dim_
   linear3_ = register_module("linear3", torch::nn::Linear(middle_dim, state_dim_));
 
   // Print debug information
-  constexpr bool debug = true;
-  if(debug)
+  if(debug_)
   {
     std::cout << "Construct NN Module" << std::endl;
     std::cout << "  - state_dim: " << state_dim_ << std::endl;

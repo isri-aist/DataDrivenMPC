@@ -1,6 +1,6 @@
 set(DDMPC_gtest_list
-  TestDataset
   TestStateEq
+  TestDataset
   )
 
 foreach(NAME IN LISTS DDMPC_gtest_list)

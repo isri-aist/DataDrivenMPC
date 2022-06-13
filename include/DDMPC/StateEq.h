@@ -30,6 +30,9 @@ public:
     torch::Tensor forward(torch::Tensor & x, torch::Tensor & u);
 
   public:
+    //! Whether to enable debug print
+    bool debug_ = true;
+
     //! State dimension
     const int state_dim_;
 
@@ -79,5 +82,3 @@ public:
   ModelPtr model_ptr_ = nullptr;
 };
 } // namespace DDMPC
-
-#include <DDMPC/StateEq.hpp>

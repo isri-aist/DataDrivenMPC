@@ -1,5 +1,7 @@
 add_library(DDMPC
+  StateEq.cpp
   Dataset.cpp
+  Training.cpp
   )
 target_include_directories(DDMPC PUBLIC
   ${PROJECT_SOURCE_DIR}/include
