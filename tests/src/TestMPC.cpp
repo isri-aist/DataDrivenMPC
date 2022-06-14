@@ -146,7 +146,7 @@ TEST(TestMPC, Test1)
   double horizon_dt = 0.03; // [sec]
   int state_dim = 2;
   int input_dim = 1;
-  int middle_layer_dim = 10;
+  int middle_layer_dim = 16;
   auto state_eq = std::make_shared<DDMPC::StateEq>(state_dim, input_dim, middle_layer_dim);
 
   // Generate dataset
@@ -177,7 +177,7 @@ TEST(TestMPC, Test1)
   DDMPC::Training training;
   std::string model_path = "/tmp/TestMPCModel.pt";
   int batch_size = 256;
-  int num_epoch = 300;
+  int num_epoch = 500;
   training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch);
   std::cout << "train duration: "
             << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now()
@@ -191,7 +191,7 @@ TEST(TestMPC, Test1)
             << "  plot \"/tmp/DataDrivenMPCTraining.txt\" u 1:2 w lp, \"\" u 1:3 w lp\n";
 
   //// 2. Run MPC ////
-  double horizon_duration = 3.0; // [sec]
+  double horizon_duration = 5.0; // [sec]
   int horizon_steps = static_cast<int>(horizon_duration / horizon_dt);
   double end_t = 10.0; // [sec]
 
@@ -211,7 +211,7 @@ TEST(TestMPC, Test1)
   ddp_solver->config().horizon_steps = horizon_steps;
 
   // Initialize MPC
-  double sim_dt = 0.01; // [sec]
+  double sim_dt = 0.02; // [sec]
   double current_t = 0;
   DDPProblem::StateDimVector current_x = DDPProblem::StateDimVector(0.0, 1.0);
   std::vector<DDPProblem::InputDimVector> current_u_list(horizon_steps, DDPProblem::InputDimVector::Zero());
@@ -260,9 +260,9 @@ TEST(TestMPC, Test1)
 
   // Final check
   const DDPProblem::InputDimVector & current_u = ddp_solver->controlData().u_list[0];
-  EXPECT_LT(std::abs(current_x[0]), 0.05);
-  EXPECT_LT(std::abs(current_x[1]), 0.05);
-  EXPECT_LT(std::abs(current_u[0]), 0.05);
+  EXPECT_LT(std::abs(current_x[0]), 0.1);
+  EXPECT_LT(std::abs(current_x[1]), 0.1);
+  EXPECT_LT(std::abs(current_u[0]), 0.1);
 
   std::cout << "Run the following commands in gnuplot:\n"
             << "  set key autotitle columnhead\n"
