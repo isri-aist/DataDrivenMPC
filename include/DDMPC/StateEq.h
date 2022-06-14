@@ -20,7 +20,7 @@ public:
         \param input_dim input dimension
         \param middle_dim middle layer dimension
      */
-    Model(int state_dim, int input_dim, int middle_dim = 100);
+    Model(int state_dim, int input_dim, int middle_dim = 32);
 
     /*! \brief Forward model.
         \param x current state
