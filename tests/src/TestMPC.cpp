@@ -143,10 +143,11 @@ Eigen::Vector2d simulate(const Eigen::Vector2d & x, const Eigen::Vector1d & u, d
 TEST(TestMPC, Test1)
 {
   //// 1. Train state equation ////
-  double dt = 0.05; // [sec]
+  double horizon_dt = 0.03; // [sec]
   int state_dim = 2;
   int input_dim = 1;
-  auto state_eq = std::make_shared<DDMPC::StateEq>(state_dim, input_dim);
+  int middle_layer_dim = 10;
+  auto state_eq = std::make_shared<DDMPC::StateEq>(state_dim, input_dim, middle_layer_dim);
 
   // Generate dataset
   auto start_dataset_time = std::chrono::system_clock::now();
@@ -156,7 +157,8 @@ TEST(TestMPC, Test1)
   Eigen::MatrixXd next_state_all(dataset_size, state_dim);
   for(int i = 0; i < dataset_size; i++)
   {
-    next_state_all.row(i) = simulate(state_all.row(i).transpose(), input_all.row(i).transpose(), dt).transpose();
+    next_state_all.row(i) =
+        simulate(state_all.row(i).transpose(), input_all.row(i).transpose(), horizon_dt).transpose();
   }
 
   // Instantiate dataset
@@ -175,7 +177,7 @@ TEST(TestMPC, Test1)
   DDMPC::Training training;
   std::string model_path = "/tmp/TestMPCModel.pt";
   int batch_size = 256;
-  int num_epoch = 500;
+  int num_epoch = 300;
   training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch);
   std::cout << "train duration: "
             << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now()
@@ -189,12 +191,12 @@ TEST(TestMPC, Test1)
             << "  plot \"/tmp/DataDrivenMPCTraining.txt\" u 1:2 w lp, \"\" u 1:3 w lp\n";
 
   //// 2. Run MPC ////
-  double horizon_duration = 5.0; // [sec]
-  int horizon_steps = static_cast<int>(horizon_duration / dt);
+  double horizon_duration = 3.0; // [sec]
+  int horizon_steps = static_cast<int>(horizon_duration / horizon_dt);
   double end_t = 10.0; // [sec]
 
   // Instantiate problem
-  auto ddp_problem = std::make_shared<DDPProblem>(dt, state_eq);
+  auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq);
 
   // Instantiate solver
   auto ddp_solver = std::make_shared<nmpc_ddp::DDPSolver<2, 1>>(ddp_problem);
@@ -209,6 +211,7 @@ TEST(TestMPC, Test1)
   ddp_solver->config().horizon_steps = horizon_steps;
 
   // Initialize MPC
+  double sim_dt = 0.01; // [sec]
   double current_t = 0;
   DDPProblem::StateDimVector current_x = DDPProblem::StateDimVector(0.0, 1.0);
   std::vector<DDPProblem::InputDimVector> current_u_list(horizon_steps, DDPProblem::InputDimVector::Zero());
@@ -248,8 +251,8 @@ TEST(TestMPC, Test1)
         << ddp_solver->traceDataList().back().iter << " " << duration << std::endl;
 
     // Update to next step
-    current_t += dt;
-    current_x = simulate(current_x, current_u, dt);
+    current_t += sim_dt;
+    current_x = simulate(current_x, current_u, sim_dt);
     current_u_list = ddp_solver->controlData().u_list;
     current_u_list.erase(current_u_list.begin());
     current_u_list.push_back(current_u_list.back());

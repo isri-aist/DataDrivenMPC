@@ -5,12 +5,12 @@
 
 using namespace DDMPC;
 
-StateEq::Model::Model(int state_dim, int input_dim, int middle_dim) : state_dim_(state_dim), input_dim_(input_dim)
+StateEq::Model::Model(int state_dim, int input_dim, int middle_layer_dim) : state_dim_(state_dim), input_dim_(input_dim)
 {
   // Instantiate layers
-  linear1_ = register_module("linear1", torch::nn::Linear(state_dim_ + input_dim_, middle_dim));
-  linear2_ = register_module("linear2", torch::nn::Linear(middle_dim, middle_dim));
-  linear3_ = register_module("linear3", torch::nn::Linear(middle_dim, state_dim_));
+  linear1_ = register_module("linear1", torch::nn::Linear(state_dim_ + input_dim_, middle_layer_dim));
+  linear2_ = register_module("linear2", torch::nn::Linear(middle_layer_dim, middle_layer_dim));
+  linear3_ = register_module("linear3", torch::nn::Linear(middle_layer_dim, state_dim_));
 
   // Print debug information
   if(debug_)
@@ -18,7 +18,7 @@ StateEq::Model::Model(int state_dim, int input_dim, int middle_dim) : state_dim_
     std::cout << "Construct NN Module" << std::endl;
     std::cout << "  - state_dim: " << state_dim_ << std::endl;
     std::cout << "  - input_dim: " << input_dim_ << std::endl;
-    std::cout << "  - layer dims: " << state_dim_ + input_dim_ << " -> " << middle_dim << " -> " << state_dim_
+    std::cout << "  - layer dims: " << state_dim_ + input_dim_ << " -> " << middle_layer_dim << " -> " << state_dim_
               << std::endl;
   }
 

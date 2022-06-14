@@ -18,9 +18,9 @@ public:
     /*! \brief Constructor.
         \param state_dim state dimension
         \param input_dim input dimension
-        \param middle_dim middle layer dimension
+        \param middle_layer_dim middle layer dimension
      */
-    Model(int state_dim, int input_dim, int middle_dim = 32);
+    Model(int state_dim, int input_dim, int middle_layer_dim);
 
     /*! \brief Forward model.
         \param x current state
@@ -64,8 +64,12 @@ public:
   /*! \brief Constructor.
       \param state_dim state dimension
       \param input_dim input dimension
+      \param middle_layer_dim middle layer dimension
    */
-  StateEq(int state_dim, int input_dim) : model_ptr_(ModelPtr(state_dim, input_dim)) {}
+  StateEq(int state_dim, int input_dim, int middle_layer_dim = 32)
+  : model_ptr_(ModelPtr(state_dim, input_dim, middle_layer_dim))
+  {
+  }
 
   /*! \brief Calculate next state.
       \param x current state
