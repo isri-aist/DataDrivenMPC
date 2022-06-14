@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 
@@ -21,7 +22,7 @@ public:
     StateDimVector terminal_state;
 
     WeightParam(const StateDimVector & _running_state = StateDimVector::Constant(1.0),
-                const InputDimVector & _running_input = InputDimVector::Constant(1e-3),
+                const InputDimVector & _running_input = InputDimVector::Constant(1.0),
                 const StateDimVector & _terminal_state = StateDimVector::Constant(1.0))
     : running_state(_running_state), running_input(_running_input), terminal_state(_terminal_state)
     {
@@ -148,7 +149,8 @@ TEST(TestMPC, Test1)
   auto state_eq = std::make_shared<DDMPC::StateEq>(state_dim, input_dim);
 
   // Generate dataset
-  int dataset_size = 40000;
+  auto start_dataset_time = std::chrono::system_clock::now();
+  int dataset_size = 100000;
   Eigen::MatrixXd state_all = 2.0 * Eigen::MatrixXd::Random(dataset_size, state_dim);
   Eigen::MatrixXd input_all = 2.0 * Eigen::MatrixXd::Random(dataset_size, input_dim);
   Eigen::MatrixXd next_state_all(dataset_size, state_dim);
@@ -162,13 +164,24 @@ TEST(TestMPC, Test1)
   std::shared_ptr<DDMPC::Dataset> test_dataset;
   DDMPC::makeDataset(DDMPC::toTorchTensor(state_all.cast<float>()), DDMPC::toTorchTensor(input_all.cast<float>()),
                      DDMPC::toTorchTensor(next_state_all.cast<float>()), train_dataset, test_dataset);
+  std::cout << "dataset duration: "
+            << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now()
+                                                                         - start_dataset_time)
+                   .count()
+            << " [s]" << std::endl;
 
   // Training model
+  auto start_train_time = std::chrono::system_clock::now();
   DDMPC::Training training;
   std::string model_path = "/tmp/TestMPCModel.pt";
   int batch_size = 256;
   int num_epoch = 500;
   training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch);
+  std::cout << "train duration: "
+            << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now()
+                                                                         - start_train_time)
+                   .count()
+            << " [s]" << std::endl;
 
   std::cout << "Run the following commands in gnuplot:\n"
             << "  set key autotitle columnhead\n"
@@ -204,10 +217,11 @@ TEST(TestMPC, Test1)
   bool first_iter = true;
   std::string file_path = "/tmp/TestMPCResult.txt";
   std::ofstream ofs(file_path);
-  ofs << "time x[0] x[1] u[0] iter" << std::endl;
+  ofs << "time x[0] x[1] u[0] ddp_iter computation_time" << std::endl;
   while(current_t < end_t)
   {
     // Solve
+    auto start_time = std::chrono::system_clock::now();
     ddp_solver->solve(current_t, current_x, current_u_list);
     if(first_iter)
     {
@@ -219,6 +233,10 @@ TEST(TestMPC, Test1)
     const auto & input_limits = input_limits_func(current_t);
     DDPProblem::InputDimVector current_u =
         ddp_solver->controlData().u_list[0].cwiseMax(input_limits[0]).cwiseMin(input_limits[1]);
+    double duration =
+        1e3
+        * std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now() - start_time)
+              .count();
 
     // Check
     EXPECT_LT(std::abs(current_x[0]), 2.0);
@@ -227,7 +245,7 @@ TEST(TestMPC, Test1)
 
     // Dump
     ofs << current_t << " " << current_x.transpose() << " " << current_u.transpose() << " "
-        << ddp_solver->traceDataList().back().iter << std::endl;
+        << ddp_solver->traceDataList().back().iter << " " << duration << std::endl;
 
     // Update to next step
     current_t += dt;
