@@ -24,14 +24,14 @@ TEST(TestTraining, Test1)
   DDMPC::makeDataset(DDMPC::toTorchTensor(state_all.cast<float>()), DDMPC::toTorchTensor(input_all.cast<float>()),
                      DDMPC::toTorchTensor(next_state_all.cast<float>()), train_dataset, test_dataset);
 
-  double before_error = (next_state_all.row(0) - state_eq->calc(state_all.row(0), input_all.row(0))).norm();
+  double before_error = (next_state_all.row(0).transpose() - state_eq->eval(state_all.row(0), input_all.row(0))).norm();
 
   // Training model
   DDMPC::Training training;
   std::string model_path = "/tmp/TestTrainingModel.pt";
   training.run(state_eq, train_dataset, test_dataset, model_path);
 
-  double after_error = (next_state_all.row(0) - state_eq->calc(state_all.row(0), input_all.row(0))).norm();
+  double after_error = (next_state_all.row(0).transpose() - state_eq->eval(state_all.row(0), input_all.row(0))).norm();
 
   // Check error
   EXPECT_LT(after_error, before_error);

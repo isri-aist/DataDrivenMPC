@@ -29,6 +29,15 @@ public:
      */
     torch::Tensor forward(torch::Tensor & x, torch::Tensor & u);
 
+    /*! \brief Forward model.
+        \param x current state
+        \param u current input
+        \param[out] grad_x gradient w.r.t. x (not calculated when the tensor size is zero)
+        \param[out] grad_u gradient w.r.t. u (not calculated when the tensor size is zero)
+        \returns next state
+     */
+    torch::Tensor forward(torch::Tensor & x, torch::Tensor & u, torch::Tensor & grad_x, torch::Tensor & grad_u);
+
   public:
     //! Whether to enable debug print
     bool debug_ = true;
@@ -63,7 +72,19 @@ public:
       \param u current input
       \returns next state
    */
-  Eigen::VectorXd calc(const Eigen::VectorXd & x, const Eigen::VectorXd & u);
+  Eigen::VectorXd eval(const Eigen::VectorXd & x, const Eigen::VectorXd & u);
+
+  /*! \brief Calculate next state.
+      \param x current state
+      \param u current input
+      \param[out] grad_x gradient w.r.t. x (not calculated when the matrix size is zero)
+      \param[out] grad_u gradient w.r.t. u (not calculated when the matrix size is zero)
+      \returns next state
+   */
+  Eigen::VectorXd eval(const Eigen::VectorXd & x,
+                       const Eigen::VectorXd & u,
+                       Eigen::Ref<Eigen::MatrixXd> grad_x,
+                       Eigen::Ref<Eigen::MatrixXd> grad_u);
 
   /*! \brief Get state dimension. */
   inline int stateDim() const
