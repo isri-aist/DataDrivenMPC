@@ -10,6 +10,7 @@ Model predictive control based on data-driven model
 ### Dependencies
 This package depends on
 - [libtorch (PyTorch C++ Frontend)](https://pytorch.org/cppdocs/installing.html)
+- [NMPC](https://github.com/isri-aist/NMPC)
 
 ### Installation procedure
 It is assumed that ROS is installed.
