@@ -47,5 +47,5 @@ Make sure that it is built with `--catkin-make-args tests` option.
 
 ### [MPC for Van der Pol oscillator](tests/src/TestMpcOscillator.cpp)
 ```bash
-$ rosrun nmpc_ddp TestMpcOscillator
+$ rosrun data_driven_mpc TestMpcOscillator
 ```
