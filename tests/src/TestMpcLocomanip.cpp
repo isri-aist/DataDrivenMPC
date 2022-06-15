@@ -37,8 +37,9 @@ public:
 public:
   DDPProblem(double dt,
              const std::shared_ptr<DDMPC::StateEq> & state_eq,
+             const std::function<void(double, Eigen::Ref<StateDimVector>, Eigen::Ref<InputDimVector>)> & ref_func,
              const WeightParam & weight_param = WeightParam())
-  : nmpc_ddp::DDPProblem<4, 2>(dt), state_eq_(state_eq), weight_param_(weight_param)
+  : nmpc_ddp::DDPProblem<4, 2>(dt), state_eq_(state_eq), ref_func_(ref_func), weight_param_(weight_param)
   {
   }
 
@@ -96,12 +97,21 @@ public:
 
   virtual double runningCost(double t, const StateDimVector & x, const InputDimVector & u) const override
   {
-    return 0.5 * weight_param_.running_state.dot(x.cwiseAbs2()) + 0.5 * weight_param_.running_input.dot(u.cwiseAbs2());
+    StateDimVector ref_x;
+    InputDimVector ref_u;
+    ref_func_(t, ref_x, ref_u);
+
+    return 0.5 * weight_param_.running_state.dot((x - ref_x).cwiseAbs2())
+           + 0.5 * weight_param_.running_input.dot((u - ref_u).cwiseAbs2());
   }
 
   virtual double terminalCost(double t, const StateDimVector & x) const override
   {
-    return 0.5 * weight_param_.terminal_state.dot(x.cwiseAbs2());
+    StateDimVector ref_x;
+    InputDimVector ref_u;
+    ref_func_(t, ref_x, ref_u);
+
+    return 0.5 * weight_param_.terminal_state.dot((x - ref_x).cwiseAbs2());
   }
 
   virtual void calcStateEqDeriv(double t,
@@ -140,8 +150,12 @@ public:
                                     Eigen::Ref<StateDimVector> running_cost_deriv_x,
                                     Eigen::Ref<InputDimVector> running_cost_deriv_u) const override
   {
-    running_cost_deriv_x = weight_param_.running_state.cwiseProduct(x);
-    running_cost_deriv_u = weight_param_.running_input.cwiseProduct(u);
+    StateDimVector ref_x;
+    InputDimVector ref_u;
+    ref_func_(t, ref_x, ref_u);
+
+    running_cost_deriv_x = weight_param_.running_state.cwiseProduct(x - ref_x);
+    running_cost_deriv_u = weight_param_.running_input.cwiseProduct(u - ref_u);
   }
 
   virtual void calcRunningCostDeriv(double t,
@@ -166,7 +180,11 @@ public:
                                      const StateDimVector & x,
                                      Eigen::Ref<StateDimVector> terminal_cost_deriv_x) const override
   {
-    terminal_cost_deriv_x = weight_param_.terminal_state.cwiseProduct(x);
+    StateDimVector ref_x;
+    InputDimVector ref_u;
+    ref_func_(t, ref_x, ref_u);
+
+    terminal_cost_deriv_x = weight_param_.terminal_state.cwiseProduct(x - ref_x);
   }
 
   virtual void calcTerminalCostDeriv(double t,
@@ -181,9 +199,11 @@ public:
   }
 
 protected:
-  WeightParam weight_param_;
-
   std::shared_ptr<DDMPC::StateEq> state_eq_;
+
+  std::function<void(double, Eigen::Ref<StateDimVector>, Eigen::Ref<InputDimVector>)> ref_func_;
+
+  WeightParam weight_param_;
 
   double gravity_acc_ = 9.8; // [m/s^2]
   double robot_mass_ = 100.0; // [kg]
@@ -202,13 +222,22 @@ TEST(TestMpcLocomanip, Test1)
   auto state_eq = std::make_shared<DDMPC::StateEq>(obj_state_dim, obj_input_dim, middle_layer_dim);
 
   // Instantiate problem
-  auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq);
+  auto ref_func = [&](double t, Eigen::Ref<DDPProblem::StateDimVector> ref_x,
+                      Eigen::Ref<DDPProblem::InputDimVector> ref_u) {
+    ref_x.setZero();
+    ref_u.setZero();
+  };
+  DDPProblem::WeightParam weight_param;
+  weight_param.running_state << 1.0, 0.1, 1.0, 0.1;
+  weight_param.running_input << 1e-3, 1e-6;
+  weight_param.terminal_state << 1.0, 0.1, 1.0, 0.1;
+  auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq, ref_func, weight_param);
 
   // Generate dataset
   auto start_dataset_time = std::chrono::system_clock::now();
-  int dataset_size = 10000;
-  Eigen::MatrixXd state_all = 2.0 * Eigen::MatrixXd::Random(dataset_size, obj_state_dim);
-  Eigen::MatrixXd input_all = 2.0 * Eigen::MatrixXd::Random(dataset_size, obj_input_dim);
+  int dataset_size = 20000;
+  Eigen::MatrixXd state_all = 1.0 * Eigen::MatrixXd::Random(dataset_size, obj_state_dim);
+  Eigen::MatrixXd input_all = 100.0 * Eigen::MatrixXd::Random(dataset_size, obj_input_dim);
   Eigen::MatrixXd next_state_all(dataset_size, obj_state_dim);
   for(int i = 0; i < dataset_size; i++)
   {
@@ -232,7 +261,7 @@ TEST(TestMpcLocomanip, Test1)
   DDMPC::Training training;
   std::string model_path = "/tmp/TestMpcLocomanipModel.pt";
   int batch_size = 256;
-  int num_epoch = 100;
+  int num_epoch = 200;
   training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch);
   std::cout << "train duration: "
             << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now()
@@ -248,14 +277,14 @@ TEST(TestMpcLocomanip, Test1)
   //// 2. Run MPC ////
   double horizon_duration = 2.0; // [sec]
   int horizon_steps = static_cast<int>(horizon_duration / horizon_dt);
-  double end_t = 10.0; // [sec]
+  double end_t = 5.0; // [sec]
 
   // Instantiate solver
   auto ddp_solver = std::make_shared<nmpc_ddp::DDPSolver<4, 2>>(ddp_problem);
   auto input_limits_func = [&](double t) -> std::array<DDPProblem::InputDimVector, 2> {
     std::array<DDPProblem::InputDimVector, 2> limits;
-    limits[0].setConstant(ddp_problem->inputDim(), -1e3);
-    limits[1].setConstant(ddp_problem->inputDim(), 1e3);
+    limits[0] << -1.0, -50.0;
+    limits[1] << 1.0, 50.0;
     return limits;
   };
   ddp_solver->setInputLimitsFunc(input_limits_func);
@@ -322,7 +351,8 @@ TEST(TestMpcLocomanip, Test1)
   std::cout << "Run the following commands in gnuplot:\n"
             << "  set key autotitle columnhead\n"
             << "  set key noenhanced\n"
-            << "  plot \"" << file_path << "\" u 1:2 w lp, \"\" u 1:4 w lp, \"\" u 1:6 w lp\n";
+            << "  plot \"" << file_path << "\" u 1:2 w lp, \"\" u 1:4 w lp, \"\" u 1:6 w lp\n"
+            << "  plot \"" << file_path << "\" u 1:7 w lp\n";
 }
 
 int main(int argc, char ** argv)
