@@ -44,3 +44,8 @@ $ catkin build data_driven_mpc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLIBTORCH_PATH
 
 ## Examples
 Make sure that it is built with `--catkin-make-args tests` option.
+
+### [MPC for Van der Pol oscillator](tests/src/TestMpcOscillator.cpp)
+```bash
+$ rosrun nmpc_ddp TestMpcOscillator
+```

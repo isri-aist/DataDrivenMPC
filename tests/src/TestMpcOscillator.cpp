@@ -140,7 +140,7 @@ Eigen::Vector2d simulate(const Eigen::Vector2d & x, const Eigen::Vector1d & u, d
   return x + dt * x_dot;
 }
 
-TEST(TestMPC, Test1)
+TEST(TestMpcOscillator, Test1)
 {
   //// 1. Train state equation ////
   double horizon_dt = 0.03; // [sec]
@@ -175,7 +175,7 @@ TEST(TestMPC, Test1)
   // Training model
   auto start_train_time = std::chrono::system_clock::now();
   DDMPC::Training training;
-  std::string model_path = "/tmp/TestMPCModel.pt";
+  std::string model_path = "/tmp/TestMpcOscillatorModel.pt";
   int batch_size = 256;
   int num_epoch = 500;
   training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch);
@@ -218,7 +218,7 @@ TEST(TestMPC, Test1)
 
   // Run MPC loop
   bool first_iter = true;
-  std::string file_path = "/tmp/TestMPCResult.txt";
+  std::string file_path = "/tmp/TestMpcOscillatorResult.txt";
   std::ofstream ofs(file_path);
   ofs << "time x[0] x[1] u[0] ddp_iter computation_time" << std::endl;
   while(current_t < end_t)
