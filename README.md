@@ -40,7 +40,7 @@ $ rosdep install -y -r --from-paths src --ignore-src
 ```bash
 $ catkin build data_driven_mpc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLIBTORCH_PATH=<absolute path to libtorch> --catkin-make-args all tests
 ```
-<absolute path to libtorch> is the path to the directory named libtorch that was extracted in step 1.
+`<absolute path to libtorch>` is the path to the directory named libtorch that was extracted in step 1.
 
 ## Examples
 Make sure that it is built with `--catkin-make-args tests` option.
