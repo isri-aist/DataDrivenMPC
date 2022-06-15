@@ -87,7 +87,7 @@ $(function() {
 <li>Follow <a href="https://pytorch.org/cppdocs/installing.html">the official instructions</a> to download and extract the zip file of libtorch.</li>
 <li>Setup catkin workspace. <div class="fragment"><div class="line">$ mkdir -p ~/ros/ws_ddmpc/src</div><div class="line">$ cd ~/ros/ws_ddmpc</div><div class="line">$ wstool init src</div><div class="line">$ wstool set -t src isri-aist/NMPC git@github.com:isri-aist/NMPC.git --git -y</div><div class="line">$ wstool set -t src isri-aist/DataDrivenMPC git@github.com:isri-aist/DataDrivenMPC.git --git -y</div><div class="line">$ wstool update -t src</div></div><!-- fragment --></li>
 <li>Install dependent packages. <div class="fragment"><div class="line">$ source /opt/ros/${ROS_DISTRO}/setup.bash</div><div class="line">$ rosdep install -y -r --from-paths src --ignore-src</div></div><!-- fragment --></li>
-<li>Build a package. <div class="fragment"><div class="line">$ catkin build data_driven_mpc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLIBTORCH_PATH=&lt;absolute path to libtorch&gt; --catkin-make-args all tests</div></div><!-- fragment --> &lt;absolute path="" to="" libtorch&gt;=""&gt; is the path to the directory named libtorch that was extracted in step 1.</li>
+<li>Build a package. <div class="fragment"><div class="line">$ catkin build data_driven_mpc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLIBTORCH_PATH=&lt;absolute path to libtorch&gt; --catkin-make-args all tests</div></div><!-- fragment --> <code>&lt;absolute path to libtorch&gt;</code> is the path to the directory named libtorch that was extracted in step 1.</li>
 </ol>
 <h2>Examples</h2>
 <p>Make sure that it is built with <code>--catkin-make-args tests</code> option. </p>
