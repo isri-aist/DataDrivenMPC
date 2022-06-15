@@ -4,6 +4,7 @@ set(DDMPC_gtest_list
   TestDataset
   TestTraining
   TestMpcOscillator
+  TestMpcLocomanip
   )
 
 foreach(NAME IN LISTS DDMPC_gtest_list)
