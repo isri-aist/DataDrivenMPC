@@ -62,6 +62,13 @@ jobs:
           repository: isri-aist/NMPC
           submodules: recursive
           path: catkin_ws/src/NMPC
+      - name: Download libtorch
+        run: |
+          set -e
+          set -x
+          cd ${GITHUB_WORKSPACE}
+          wget https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.11.0%2Bcpu.zip
+          unzip libtorch-cxx11-abi-shared-with-deps-1.11.0+cpu.zip
       - name: Rosdep install
         run: |
           set -e
@@ -81,7 +88,8 @@ jobs:
           set +x
           . devel/setup.bash
           set -x
-          catkin build --limit-status-rate 0.1 -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DINSTALL_DOCUMENTATION=ON
+          catkin build --limit-status-rate 0.1 -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DINSTALL_DOCUMENTATION=ON \
+          -DLIBTORCH_PATH=${GITHUB_WORKSPACE}/libtorch
       # - name: Run tests
       #   run: |
       #     set -e
