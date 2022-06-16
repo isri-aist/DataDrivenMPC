@@ -25,18 +25,24 @@ public:
     /*! \brief Forward model.
         \param x current state
         \param u current input
+        \param enable_auto_grad whether to enable automatic gradient (default true)
         \returns next state
      */
-    torch::Tensor forward(torch::Tensor & x, torch::Tensor & u);
+    torch::Tensor forward(torch::Tensor & x, torch::Tensor & u, bool enable_auto_grad = true);
 
     /*! \brief Forward model.
         \param x current state
         \param u current input
         \param[out] grad_x gradient w.r.t. x (not calculated when the tensor size is zero)
         \param[out] grad_u gradient w.r.t. u (not calculated when the tensor size is zero)
+        \param enable_auto_grad whether to enable automatic gradient (default true)
         \returns next state
      */
-    torch::Tensor forward(torch::Tensor & x, torch::Tensor & u, torch::Tensor & grad_x, torch::Tensor & grad_u);
+    torch::Tensor forward(torch::Tensor & x,
+                          torch::Tensor & u,
+                          torch::Tensor & grad_x,
+                          torch::Tensor & grad_u,
+                          bool enable_auto_grad = true);
 
   public:
     //! Whether to enable debug print

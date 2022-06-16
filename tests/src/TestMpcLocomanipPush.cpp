@@ -369,7 +369,7 @@ TEST(TestMpcLocomanipPush, RunMPC)
   ddp_solver->config().horizon_steps = horizon_steps;
 
   // Initialize MPC
-  double sim_dt = 0.02; // [sec]
+  double sim_dt = 0.05; // [sec]
   double current_t = 0;
   DDPProblem::StateDimVector current_x = DDPProblem::StateDimVector(0.0, 0.0, 0.2, 0.0);
   std::vector<DDPProblem::InputDimVector> current_u_list(horizon_steps, DDPProblem::InputDimVector::Zero());

@@ -27,17 +27,18 @@ StateEq::Model::Model(int state_dim, int input_dim, int middle_layer_dim) : stat
   torch::cuda::is_available();
 }
 
-torch::Tensor StateEq::Model::forward(torch::Tensor & x, torch::Tensor & u)
+torch::Tensor StateEq::Model::forward(torch::Tensor & x, torch::Tensor & u, bool enable_auto_grad)
 {
   torch::Tensor grad_x = torch::empty({});
   torch::Tensor grad_u = torch::empty({});
-  return forward(x, u, grad_x, grad_u);
+  return forward(x, u, grad_x, grad_u, enable_auto_grad);
 }
 
 torch::Tensor StateEq::Model::forward(torch::Tensor & x,
                                       torch::Tensor & u,
                                       torch::Tensor & grad_x,
-                                      torch::Tensor & grad_u)
+                                      torch::Tensor & grad_u,
+                                      bool enable_auto_grad)
 {
   // Check dimensions
   assert(x.size(1) == state_dim_);
@@ -75,6 +76,13 @@ torch::Tensor StateEq::Model::forward(torch::Tensor & x,
                              + std::to_string(x.size(0)));
   }
 
+  std::unique_ptr<torch::NoGradGuard> no_grad;
+  if(!enable_auto_grad)
+  {
+    // Not calculate gradient
+    no_grad = std::make_unique<torch::NoGradGuard>();
+  }
+
   // Calculate network output
   torch::Tensor xu = torch::cat({x, u}, 1);
   xu = torch::relu(linear1_(xu));
@@ -110,9 +118,19 @@ torch::Tensor StateEq::Model::forward(torch::Tensor & x,
 
 Eigen::VectorXd StateEq::eval(const Eigen::VectorXd & x, const Eigen::VectorXd & u)
 {
-  Eigen::MatrixXd grad_x = Eigen::MatrixXd::Zero(0, 0);
-  Eigen::MatrixXd grad_u = Eigen::MatrixXd::Zero(0, 0);
-  return eval(x, u, grad_x, grad_u);
+  // Check dimensions
+  assert(x.size() == stateDim());
+  assert(u.size() == inputDim());
+
+  // Set tensor
+  torch::Tensor x_tensor = toTorchTensor(x.transpose().cast<float>());
+  torch::Tensor u_tensor = toTorchTensor(u.transpose().cast<float>());
+
+  // Forward network
+  torch::Tensor next_x_tensor = model_ptr_->forward(x_tensor, u_tensor, false);
+
+  // Set output variables
+  return toEigenMatrix(next_x_tensor).transpose().cast<double>();
 }
 
 Eigen::VectorXd StateEq::eval(const Eigen::VectorXd & x,
@@ -133,7 +151,7 @@ Eigen::VectorXd StateEq::eval(const Eigen::VectorXd & x,
   torch::Tensor grad_u_tensor = grad_u.size() > 0 ? torch::empty({grad_u.rows(), grad_u.cols()}) : torch::empty({});
 
   // Forward network
-  torch::Tensor next_x_tensor = model_ptr_->forward(x_tensor, u_tensor, grad_x_tensor, grad_u_tensor);
+  torch::Tensor next_x_tensor = model_ptr_->forward(x_tensor, u_tensor, grad_x_tensor, grad_u_tensor, true);
 
   // Set output variables
   if(grad_x.size() > 0)
