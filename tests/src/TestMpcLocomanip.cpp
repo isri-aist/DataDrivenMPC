@@ -255,21 +255,17 @@ TEST(TestMpcLocomanip, RunMPC)
 
     // ZMP position
     ref_u.setZero();
-    if(t < 1.5) // [sec]
+    double step_total_duration = 1.0; // [sec]
+    double step_transit_duration = 0.2; // [sec]
+    int step_idx = std::clamp(static_cast<int>(std::floor((t - 1.5) / step_total_duration)), -1, 2);
+    if(step_idx == -1)
     {
       ref_u[0] = 0.0; // [m]
     }
-    else if(t < 2.5) // [sec]
-    {
-      ref_u[0] = 0.2; // [m]
-    }
-    else if(t < 3.5) // [sec]
-    {
-      ref_u[0] = 0.4; // [m]
-    }
     else
     {
-      ref_u[0] = 0.6; // [m]
+      double step_start_time = 1.5 + step_idx * step_total_duration;
+      ref_u[0] = 0.2 * (step_idx + std::clamp((t - step_start_time) / step_transit_duration, 0.0, 1.0));
     }
     ref_x[0] = ref_u[0];
   };
@@ -358,7 +354,7 @@ TEST(TestMpcLocomanip, RunMPC)
     if(first_iter)
     {
       first_iter = false;
-      ddp_solver->config().max_iter = 5;
+      ddp_solver->config().max_iter = 3;
     }
 
     // Set input
