@@ -49,3 +49,9 @@ Make sure that it is built with `--catkin-make-args tests` option.
 ```bash
 $ rosrun data_driven_mpc TestMpcOscillator
 ```
+
+### [MPC for pushing loco-manipulation](tests/src/TestMpcLocomanipPush.cpp)
+```bash
+$ rosrun data_driven_mpc TestMpcLocomanipPush --gtest_filter=*.RunMPC
+$ rosrun data_driven_mpc plotTestMpcLocomanipPush.py
+```
