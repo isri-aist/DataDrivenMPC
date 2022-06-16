@@ -325,8 +325,8 @@ TEST(TestMpcLocomanip, RunMPC)
   auto ddp_solver = std::make_shared<nmpc_ddp::DDPSolver<4, 2>>(ddp_problem);
   auto input_limits_func = [&](double t) -> std::array<DDPProblem::InputDimVector, 2> {
     std::array<DDPProblem::InputDimVector, 2> limits;
-    limits[0] << -1.0, -50.0;
-    limits[1] << 1.0, 50.0;
+    limits[0] << -1e10, -50.0;
+    limits[1] << 1e10, 50.0;
     return limits;
   };
   ddp_solver->setInputLimitsFunc(input_limits_func);
@@ -354,7 +354,7 @@ TEST(TestMpcLocomanip, RunMPC)
     if(first_iter)
     {
       first_iter = false;
-      ddp_solver->config().max_iter = 3;
+      ddp_solver->config().max_iter = 5;
     }
 
     // Set input
@@ -367,15 +367,17 @@ TEST(TestMpcLocomanip, RunMPC)
               .count();
 
     // Check
-    // TODO
-    // EXPECT_LT(std::abs(current_x[0]), 2.0);
-    // EXPECT_LT(std::abs(current_x[1]), 2.0);
-    // EXPECT_LE(std::abs(current_u[0]), 1.0);
-
-    // Dump
     DDPProblem::StateDimVector current_ref_x;
     DDPProblem::InputDimVector current_ref_u;
     ref_func(current_t, current_ref_x, current_ref_u);
+    EXPECT_LT(std::abs(current_x[0] - current_ref_x[0]), 1.0); // [m]
+    EXPECT_LT(std::abs(current_x[1] - current_ref_x[1]), 1.0); // [m/s]
+    EXPECT_LT(std::abs(current_x[2] - current_ref_x[2]), 1.0); // [m]
+    EXPECT_LT(std::abs(current_x[3] - current_ref_x[3]), 1.0); // [m/s]
+    EXPECT_LT(std::abs(current_u[0] - current_ref_u[0]), 1.0); // [m]
+    EXPECT_LE(std::abs(current_u[1]), 50.0); // [N]
+
+    // Dump
     ofs << current_t << " " << current_x.transpose() << " " << current_u.transpose() << " " << current_ref_x[2] << " "
         << current_ref_u[0] << " " << ddp_solver->traceDataList().back().iter << " " << duration << std::endl;
 
@@ -383,16 +385,19 @@ TEST(TestMpcLocomanip, RunMPC)
     current_t += sim_dt;
     current_x = ddp_problem->simulate(current_x, current_u, sim_dt);
     current_u_list = ddp_solver->controlData().u_list;
-    current_u_list.erase(current_u_list.begin());
-    current_u_list.push_back(current_u_list.back());
   }
 
   // Final check
   const DDPProblem::InputDimVector & current_u = ddp_solver->controlData().u_list[0];
-  // TODO
-  // EXPECT_LT(std::abs(current_x[0]), 0.1);
-  // EXPECT_LT(std::abs(current_x[1]), 0.5);
-  // EXPECT_LT(std::abs(current_u[0]), 0.5);
+  DDPProblem::StateDimVector current_ref_x;
+  DDPProblem::InputDimVector current_ref_u;
+  ref_func(current_t, current_ref_x, current_ref_u);
+  EXPECT_LT(std::abs(current_x[0] - current_ref_x[0]), 0.1); // [m]
+  EXPECT_LT(std::abs(current_x[1] - current_ref_x[1]), 0.1); // [m/s]
+  EXPECT_LT(std::abs(current_x[2] - current_ref_x[2]), 0.1); // [m]
+  EXPECT_LT(std::abs(current_x[3] - current_ref_x[3]), 0.1); // [m/s]
+  EXPECT_LT(std::abs(current_u[0] - current_ref_u[0]), 0.1); // [m]
+  EXPECT_LE(std::abs(current_u[1]), 10.0); // [N]
 
   std::cout << "Run the following commands in gnuplot:\n"
             << "  set key autotitle columnhead\n"
