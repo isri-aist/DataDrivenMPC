@@ -39,11 +39,14 @@ public:
   };
 
 public:
-  DDPProblem(double dt,
-             const std::shared_ptr<DDMPC::StateEq> & state_eq,
-             const std::function<void(double, Eigen::Ref<StateDimVector>, Eigen::Ref<InputDimVector>)> & ref_func,
-             const WeightParam & weight_param = WeightParam())
-  : nmpc_ddp::DDPProblem<4, 2>(dt), state_eq_(state_eq), ref_func_(ref_func), weight_param_(weight_param)
+  DDPProblem(
+      double dt,
+      const std::shared_ptr<DDMPC::StateEq> & state_eq,
+      const std::function<double(double)> & damper_func = nullptr,
+      const std::function<void(double, Eigen::Ref<StateDimVector>, Eigen::Ref<InputDimVector>)> & ref_func = nullptr,
+      const WeightParam & weight_param = WeightParam())
+  : nmpc_ddp::DDPProblem<4, 2>(dt), state_eq_(state_eq), damper_func_(damper_func), ref_func_(ref_func),
+    weight_param_(weight_param)
   {
   }
 
@@ -62,12 +65,6 @@ public:
     return x + dt * x_dot;
   }
 
-  double damperFunc(double vel) const
-  {
-    double damper_coeff = 100.0;
-    return -1 * damper_coeff * vel;
-  }
-
   Eigen::Vector2d simulateObj(const Eigen::Vector2d & x, const Eigen::Vector1d & u, double dt) const
   {
     double obj_com_pos = x[0];
@@ -76,7 +73,7 @@ public:
 
     Eigen::Vector2d x_dot;
     x_dot[0] = obj_com_vel;
-    x_dot[1] = (damperFunc(obj_com_vel) + obj_force) / obj_mass_;
+    x_dot[1] = (damper_func_(obj_com_vel) + obj_force) / obj_mass_;
 
     return x + dt * x_dot;
   }
@@ -209,6 +206,8 @@ public:
 protected:
   std::shared_ptr<DDMPC::StateEq> state_eq_;
 
+  std::function<double(double)> damper_func_;
+
   std::function<void(double, Eigen::Ref<StateDimVector>, Eigen::Ref<InputDimVector>)> ref_func_;
 
   WeightParam weight_param_;
@@ -232,8 +231,44 @@ TEST(TestMpcLocomanipPush, RunMPC)
   auto state_eq = std::make_shared<DDMPC::StateEq>(obj_state_dim, obj_input_dim, middle_layer_dim);
 
   // Instantiate problem
+  std::string damper_type_str = "Linear";
+  std::function<double(double)> damper_func = nullptr;
+  if(damper_type_str == "None")
+  {
+    damper_func = [&](double vel) -> double {
+      return 0; // [N]
+    };
+  }
+  else if(damper_type_str == "Linear")
+  {
+    damper_func = [&](double vel) -> double {
+      return -100 * vel; // [N]
+    };
+  }
+  else if(damper_type_str == "Square")
+  {
+    damper_func = [&](double vel) -> double {
+      return -500 * std::copysign(std::pow(vel, 2), vel); // [N]
+    };
+  }
+  else if(damper_type_str == "Sqrt")
+  {
+    damper_func = [&](double vel) -> double {
+      return -20 * std::copysign(std::sqrt(std::abs(vel)), vel); // [N]
+    };
+  }
+  else if(damper_type_str == "Offset")
+  {
+    damper_func = [&](double vel) -> double {
+      return -25; // [N]
+    };
+  }
+  else
+  {
+    throw std::runtime_error("Invalid damper_type_str: " + damper_type_str);
+  }
   auto ref_func = [&](double t, Eigen::Ref<DDPProblem::StateDimVector> ref_x,
-                      Eigen::Ref<DDPProblem::InputDimVector> ref_u) {
+                      Eigen::Ref<DDPProblem::InputDimVector> ref_u) -> void {
     // Add small values to avoid numerical instability at inequality bounds
     constexpr double epsilon_t = 1e-6;
     t += epsilon_t;
@@ -273,7 +308,7 @@ TEST(TestMpcLocomanipPush, RunMPC)
   weight_param.running_state << 0.0, 1e-4, 1e2, 1e-4;
   weight_param.running_input << 1.0, 1e-4;
   weight_param.terminal_state << 1.0, 1.0, 1.0, 1.0;
-  auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq, ref_func, weight_param);
+  auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq, damper_func, ref_func, weight_param);
 
   // Generate dataset
   auto start_dataset_time = std::chrono::system_clock::now();
@@ -341,7 +376,7 @@ TEST(TestMpcLocomanipPush, RunMPC)
 
   // Run MPC loop
   bool first_iter = true;
-  std::string file_path = "/tmp/TestMpcLocomanipPushResult.txt";
+  std::string file_path = "/tmp/TestMpcLocomanipPushResult-" + damper_type_str + ".txt";
   std::ofstream ofs(file_path);
   ofs << "time robot_com_pos robot_com_vel obj_com_pos obj_com_vel robot_zmp obj_force ref_obj_com_pos ref_robot_zmp "
          "ddp_iter computation_time"
@@ -416,12 +451,7 @@ TEST(TestMpcLocomanipPush, CheckDerivatives)
   int obj_input_dim = 1;
   int middle_layer_dim = 4;
   auto state_eq = std::make_shared<DDMPC::StateEq>(obj_state_dim, obj_input_dim, middle_layer_dim);
-  auto ref_func = [&](double t, Eigen::Ref<DDPProblem::StateDimVector> ref_x,
-                      Eigen::Ref<DDPProblem::InputDimVector> ref_u) {
-    ref_x.setZero();
-    ref_u.setZero();
-  };
-  auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq, ref_func);
+  auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq);
 
   double t = 0;
   DDPProblem::StateDimVector x = DDPProblem::StateDimVector::Random();
