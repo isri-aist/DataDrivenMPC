@@ -16,7 +16,11 @@ namespace Eigen
 using Vector1d = Eigen::Matrix<double, 1, 1>;
 }
 
-/** \brief DDP problem based on combination of analytical and data-driven models. */
+/** \brief DDP problem based on combination of analytical and data-driven models.
+
+    State consists of [robot_com_pos, robot_com_vel, obj_com_pos, obj_com_vel].
+    Input consists of [robot_zmp, obj_force].
+ */
 class DDPProblem : public nmpc_ddp::DDPProblem<4, 2>
 {
 public:
@@ -60,7 +64,7 @@ public:
 
   double damperFunc(double vel) const
   {
-    double damper_coeff = 1.0;
+    double damper_coeff = 100.0;
     return -1 * damper_coeff * vel;
   }
 
@@ -216,10 +220,10 @@ protected:
   double obj_grasp_height_ = 1.0; // [m]
 };
 
-TEST(TestMpcLocomanip, Test1)
+TEST(TestMpcLocomanip, RunMPC)
 {
   //// 1. Train state equation ////
-  double horizon_dt = 0.05; // [sec]
+  double horizon_dt = 0.1; // [sec]
 
   // Instantiate state equation
   int obj_state_dim = 2;
@@ -230,13 +234,49 @@ TEST(TestMpcLocomanip, Test1)
   // Instantiate problem
   auto ref_func = [&](double t, Eigen::Ref<DDPProblem::StateDimVector> ref_x,
                       Eigen::Ref<DDPProblem::InputDimVector> ref_u) {
+    // Add small values to avoid numerical instability at inequality bounds
+    constexpr double epsilon_t = 1e-6;
+    t += epsilon_t;
+
+    // Object position
     ref_x.setZero();
+    if(t < 1.0) // [sec]
+    {
+      ref_x[2] = 0.2; // [m]
+    }
+    else if(t < 3.0) // [sec]
+    {
+      ref_x[2] = 0.3 * (t - 1.0) + 0.2; // [m]
+    }
+    else
+    {
+      ref_x[2] = 0.8; // [m]
+    }
+
+    // ZMP position
     ref_u.setZero();
+    if(t < 1.5) // [sec]
+    {
+      ref_u[0] = 0.0; // [m]
+    }
+    else if(t < 2.5) // [sec]
+    {
+      ref_u[0] = 0.2; // [m]
+    }
+    else if(t < 3.5) // [sec]
+    {
+      ref_u[0] = 0.4; // [m]
+    }
+    else
+    {
+      ref_u[0] = 0.6; // [m]
+    }
+    ref_x[0] = ref_u[0];
   };
   DDPProblem::WeightParam weight_param;
-  weight_param.running_state << 1.0, 0.1, 1.0, 0.1;
-  weight_param.running_input << 1e-3, 1e-6;
-  weight_param.terminal_state << 1.0, 0.1, 1.0, 0.1;
+  weight_param.running_state << 0.0, 1e-4, 1e2, 1e-4;
+  weight_param.running_input << 1.0, 1e-4;
+  weight_param.terminal_state << 1.0, 1.0, 1.0, 1.0;
   auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq, ref_func, weight_param);
 
   // Generate dataset
@@ -281,7 +321,7 @@ TEST(TestMpcLocomanip, Test1)
             << "  plot \"/tmp/DataDrivenMPCTraining.txt\" u 1:2 w lp, \"\" u 1:3 w lp\n";
 
   //// 2. Run MPC ////
-  double horizon_duration = 2.0; // [sec]
+  double horizon_duration = 3.0; // [sec]
   int horizon_steps = static_cast<int>(horizon_duration / horizon_dt);
   double end_t = 5.0; // [sec]
 
@@ -307,7 +347,8 @@ TEST(TestMpcLocomanip, Test1)
   bool first_iter = true;
   std::string file_path = "/tmp/TestMpcLocomanipResult.txt";
   std::ofstream ofs(file_path);
-  ofs << "time robot_com_pos robot_com_vel obj_com_pos obj_com_vel robot_zmp obj_force ddp_iter computation_time"
+  ofs << "time robot_com_pos robot_com_vel obj_com_pos obj_com_vel robot_zmp obj_force ref_obj_com_pos ref_robot_zmp "
+         "ddp_iter computation_time"
       << std::endl;
   while(current_t < end_t)
   {
@@ -336,8 +377,11 @@ TEST(TestMpcLocomanip, Test1)
     // EXPECT_LE(std::abs(current_u[0]), 1.0);
 
     // Dump
-    ofs << current_t << " " << current_x.transpose() << " " << current_u.transpose() << " "
-        << ddp_solver->traceDataList().back().iter << " " << duration << std::endl;
+    DDPProblem::StateDimVector current_ref_x;
+    DDPProblem::InputDimVector current_ref_u;
+    ref_func(current_t, current_ref_x, current_ref_u);
+    ofs << current_t << " " << current_x.transpose() << " " << current_u.transpose() << " " << current_ref_x[2] << " "
+        << current_ref_u[0] << " " << ddp_solver->traceDataList().back().iter << " " << duration << std::endl;
 
     // Update to next step
     current_t += sim_dt;
@@ -357,7 +401,8 @@ TEST(TestMpcLocomanip, Test1)
   std::cout << "Run the following commands in gnuplot:\n"
             << "  set key autotitle columnhead\n"
             << "  set key noenhanced\n"
-            << "  plot \"" << file_path << "\" u 1:2 w lp, \"\" u 1:4 w lp, \"\" u 1:6 w lp\n"
+            << "  plot \"" << file_path
+            << "\" u 1:2 w lp, \"\" u 1:4 w lp, \"\" u 1:6 w lp, \"\" u 1:8 w l lw 2, \"\" u 1:9 w l lw 2\n"
             << "  plot \"" << file_path << "\" u 1:7 w lp\n";
 }
 
