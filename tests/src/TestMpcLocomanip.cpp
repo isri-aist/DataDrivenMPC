@@ -123,10 +123,14 @@ public:
     state_eq_deriv_x.setZero();
     state_eq_deriv_u.setZero();
 
-    state_eq_deriv_x(0, 1) = 0;
+    state_eq_deriv_x(0, 1) = 1;
     state_eq_deriv_x(1, 0) = gravity_acc_ / robot_com_height_;
+    state_eq_deriv_x.topRows<2>() *= dt_;
+    state_eq_deriv_x.diagonal().head<2>().array() += 1.0;
+
     state_eq_deriv_u(1, 0) = -1 * gravity_acc_ / robot_com_height_;
     state_eq_deriv_u(1, 1) = -1 * obj_grasp_height_ / (robot_mass_ * robot_com_height_);
+    state_eq_deriv_u.topRows<2>() *= dt_;
 
     state_eq_->eval(x.tail<2>(), u.tail<1>(), state_eq_deriv_x.bottomRightCorner<2, 2>(),
                     state_eq_deriv_u.bottomRightCorner<2, 1>());
@@ -216,6 +220,8 @@ TEST(TestMpcLocomanip, Test1)
 {
   //// 1. Train state equation ////
   double horizon_dt = 0.05; // [sec]
+
+  // Instantiate state equation
   int obj_state_dim = 2;
   int obj_input_dim = 1;
   int middle_layer_dim = 4;
@@ -353,6 +359,63 @@ TEST(TestMpcLocomanip, Test1)
             << "  set key noenhanced\n"
             << "  plot \"" << file_path << "\" u 1:2 w lp, \"\" u 1:4 w lp, \"\" u 1:6 w lp\n"
             << "  plot \"" << file_path << "\" u 1:7 w lp\n";
+}
+
+TEST(TestMpcLocomanip, CheckDerivatives)
+{
+  constexpr double deriv_eps = 1e-4;
+
+  double horizon_dt = 0.05; // [sec]
+  int obj_state_dim = 2;
+  int obj_input_dim = 1;
+  int middle_layer_dim = 4;
+  auto state_eq = std::make_shared<DDMPC::StateEq>(obj_state_dim, obj_input_dim, middle_layer_dim);
+  auto ref_func = [&](double t, Eigen::Ref<DDPProblem::StateDimVector> ref_x,
+                      Eigen::Ref<DDPProblem::InputDimVector> ref_u) {
+    ref_x.setZero();
+    ref_u.setZero();
+  };
+  auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq, ref_func);
+
+  double t = 0;
+  DDPProblem::StateDimVector x = DDPProblem::StateDimVector::Random();
+  DDPProblem::InputDimVector u = DDPProblem::InputDimVector::Random();
+
+  DDPProblem::StateStateDimMatrix state_eq_deriv_x_analytical;
+  DDPProblem::StateInputDimMatrix state_eq_deriv_u_analytical;
+  ddp_problem->calcStateEqDeriv(t, x, u, state_eq_deriv_x_analytical, state_eq_deriv_u_analytical);
+
+  DDPProblem::StateStateDimMatrix state_eq_deriv_x_numerical;
+  DDPProblem::StateInputDimMatrix state_eq_deriv_u_numerical;
+  for(int i = 0; i < ddp_problem->stateDim(); i++)
+  {
+    state_eq_deriv_x_numerical.col(i) =
+        (ddp_problem->stateEq(t, x + deriv_eps * DDPProblem::StateDimVector::Unit(i), u)
+         - ddp_problem->stateEq(t, x - deriv_eps * DDPProblem::StateDimVector::Unit(i), u))
+        / (2 * deriv_eps);
+  }
+  for(int i = 0; i < ddp_problem->inputDim(); i++)
+  {
+    state_eq_deriv_u_numerical.col(i) =
+        (ddp_problem->stateEq(t, x, u + deriv_eps * DDPProblem::InputDimVector::Unit(i))
+         - ddp_problem->stateEq(t, x, u - deriv_eps * DDPProblem::InputDimVector::Unit(i)))
+        / (2 * deriv_eps);
+  }
+
+  EXPECT_LT((state_eq_deriv_x_analytical - state_eq_deriv_x_numerical).norm(), 1e-3)
+      << "state_eq_deriv_x_analytical:\n"
+      << state_eq_deriv_x_analytical << std::endl
+      << "state_eq_deriv_x_numerical:\n"
+      << state_eq_deriv_x_numerical << std::endl
+      << "state_eq_deriv_x_error:\n"
+      << state_eq_deriv_x_analytical - state_eq_deriv_x_numerical << std::endl;
+  EXPECT_LT((state_eq_deriv_u_analytical - state_eq_deriv_u_numerical).norm(), 1e-3)
+      << "state_eq_deriv_u_analytical:\n"
+      << state_eq_deriv_u_analytical << std::endl
+      << "state_eq_deriv_u_numerical:\n"
+      << state_eq_deriv_u_numerical << std::endl
+      << "state_eq_deriv_u_error:\n"
+      << state_eq_deriv_u_analytical - state_eq_deriv_u_numerical << std::endl;
 }
 
 int main(int argc, char ** argv)
