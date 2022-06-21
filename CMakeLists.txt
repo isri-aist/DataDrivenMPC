@@ -18,9 +18,15 @@ message("-- LIBTORCH_PATH: ${LIBTORCH_PATH}")
 list(APPEND CMAKE_PREFIX_PATH ${LIBTORCH_PATH})
 find_package(Torch REQUIRED)
 
+add_message_files(
+  FILES
+  Dataset.msg
+  )
+
 add_service_files(
   FILES
   RunSimOnce.srv
+  GenerateDataset.srv
   )
 
 generate_messages(

@@ -8,6 +8,8 @@ import pybullet_data
 import matplotlib.pyplot as plt
 
 import rospy
+import rosbag
+from data_driven_mpc.msg import *
 from data_driven_mpc.srv import *
 
 
@@ -75,6 +77,7 @@ class SimTestMpcCart(object):
 
         # Setup ROS
         run_sim_once_srv = rospy.Service("/run_sim_once", RunSimOnce, self.runSimOnceCallback)
+        generate_dataset_srv = rospy.Service("/generate_dataset", GenerateDataset, self.generateDatasetCallback)
 
     def runOnce(self, manip_force=None):
         """"Run simulation step once.
@@ -153,11 +156,49 @@ class SimTestMpcCart(object):
             self.setState(np.array(req.state))
 
         manip_force = np.array([req.input[0], 0.0, req.input[1]])
-        for i in range(int(req.duration / self.dt)):
+        for i in range(int(req.dt / self.dt)):
             self.runOnce(manip_force)
 
         res = RunSimOnceResponse()
         res.state = self.getState()
+        return res
+
+    def generateDatasetCallback(self, req):
+        """ROS service callback to generate dataset."""
+        state_min = np.array(req.state_min)
+        state_max = np.array(req.state_max)
+        input_min = np.array(req.input_min)
+        input_max = np.array(req.input_max)
+
+        state_all = []
+        input_all = []
+        next_state_all = []
+        for i in range(req.dataset_size):
+            state = state_min + np.random.rand(len(state_min)) * (state_max - state_min)
+            input = input_min + np.random.rand(len(input_min)) * (input_max - input_min)
+            manip_force = np.array([input[0], 0.0, input[1]])
+            self.setState(state)
+            for i in range(int(req.dt / self.dt)):
+                self.runOnce(manip_force)
+            next_state = self.getState()
+            state_all.append(state)
+            input_all.append(input)
+            next_state_all.append(next_state)
+
+        msg = Dataset()
+        msg.dataset_size = req.dataset_size
+        msg.dt = req.dt
+        msg.state_dim = len(state_min)
+        msg.input_dim = len(input_min)
+        msg.state_all = np.array(state_all).flatten()
+        msg.input_all = np.array(input_all).flatten()
+        msg.next_state_all = np.array(next_state_all).flatten()
+        bag = rosbag.Bag(req.filename, "w")
+        bag.write("/dataset", msg)
+        bag.close()
+        print("[SimTestMpcCart] Save dataset to {}".format(req.filename))
+
+        res = GenerateDatasetResponse()
         return res
 
 

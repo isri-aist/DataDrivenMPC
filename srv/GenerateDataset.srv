@@ -1,0 +1,18 @@
+# File name to save dataset
+string filename
+
+# Number of data in dataset
+int32 dataset_size
+
+# Discretization period of the state equation [sec]
+float64 dt
+
+# Min/max of state random samples
+float64[] state_min
+float64[] state_max
+
+# Min/max of input random samples
+float64[] input_min
+float64[] input_max
+
+---

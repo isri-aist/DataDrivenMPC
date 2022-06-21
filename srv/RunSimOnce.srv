@@ -1,6 +1,6 @@
 # Duration to proceed the simulation [sec]
 # Specify zero to set/get the state without proceeding the simulation.
-float64 duration
+float64 dt
 
 # Initial state
 # Leave empty to start from the internal state.
