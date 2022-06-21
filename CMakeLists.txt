@@ -18,6 +18,15 @@ message("-- LIBTORCH_PATH: ${LIBTORCH_PATH}")
 list(APPEND CMAKE_PREFIX_PATH ${LIBTORCH_PATH})
 find_package(Torch REQUIRED)
 
+add_service_files(
+  FILES
+  RunSimOnce.srv
+  )
+
+generate_messages(
+  DEPENDENCIES
+  )
+
 catkin_package(
   CATKIN_DEPENDS
   roscpp

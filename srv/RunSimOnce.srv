@@ -1,0 +1,21 @@
+# Duration to proceed the simulation [sec]
+# Specify zero to set/get the state without proceeding the simulation.
+float64 duration
+
+# Initial state
+# Leave empty to start from the internal state.
+float64[] state
+
+# Control input
+float64[] input
+
+# Additional data
+float64[] additional_data
+
+---
+
+# Final state
+float64[] state
+
+# Additional data
+float64[] additional_data

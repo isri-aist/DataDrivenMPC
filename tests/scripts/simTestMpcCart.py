@@ -7,6 +7,9 @@ import pybullet
 import pybullet_data
 import matplotlib.pyplot as plt
 
+import rospy
+from data_driven_mpc.srv import *
+
 
 class SimTestMpcCart(object):
     def __init__(self):
@@ -70,12 +73,14 @@ class SimTestMpcCart(object):
         # Setup variables
         self.force_line_uid = -1
 
-    def runOnce(self, manip_force=None, manip_pos_local=None):
+        # Setup ROS
+        run_sim_once_srv = rospy.Service("/run_sim_once", RunSimOnce, self.runSimOnceCallback)
+
+    def runOnce(self, manip_force=None):
         """"Run simulation step once.
 
         Args:
             manip_force manipulation force in world frame
-            manip_pos_local manipulation position in object local frame
         """
         # Process simulation step
         pybullet.stepSimulation()
@@ -85,6 +90,7 @@ class SimTestMpcCart(object):
             box_link_pos, box_link_rot = pybullet.getBasePositionAndOrientation(bodyUniqueId=self.cart_body_uid)
             box_link_pos = np.array(box_link_pos)
             box_link_rot = np.array(pybullet.getMatrixFromQuaternion(box_link_rot)).reshape((3, 3))
+            manip_pos_local = np.array([-1 * self.box_half_scale[0], 0.0, self.box_half_scale[2]]) - self.box_com_offset
             manip_pos = box_link_pos + box_link_rot.dot(manip_pos_local)
             pybullet.applyExternalForce(objectUniqueId=self.cart_body_uid,
                                         linkIndex=0,
@@ -134,21 +140,40 @@ class SimTestMpcCart(object):
                                    linearVelocity=linear_vel,
                                    angularVelocity=angular_vel)
 
+    def runSimOnceCallback(self, req):
+        """ROS service callback to run simulation step once."""
+        assert len(req.state) == 0 or len(req.state) == 4, \
+            "req.state dimension is invalid {} != 0 or 4".format(len(req.state))
+        assert len(req.input) == 2, \
+            "req.input dimension is invalid {} != 2".format(len(req.input))
+        assert len(req.additional_data) == 0, \
+            "req.additional_data dimension is invalid {} != 0".format(len(req.additional_data))
+
+        if len(req.state) > 0:
+            self.setState(np.array(req.state))
+
+        manip_force = np.array([req.input[0], 0.0, req.input[1]])
+        for i in range(int(req.duration / self.dt)):
+            self.runOnce(manip_force)
+
+        res = RunSimOnceResponse()
+        res.state = self.getState()
+        return res
+
 
 def demo():
     sim = SimTestMpcCart()
     sim.setState([0.3, 1.0, np.deg2rad(-10.0), 0.0])
 
     t = 0.0 # [sec]
-    while t < 30.0:
-        # Set manipulation force
+    while pybullet.isConnected():
+        # Calculate manipulation force
         _, _, theta, theta_dot = sim.getState()
         manip_force_z = -500.0 * theta -100.0 * theta_dot # [N]
         manip_force = np.array([0.0, 0.0, manip_force_z])
-        manip_pos_local = np.array([-1 * sim.box_half_scale[0], 0.0, sim.box_half_scale[2]]) - sim.box_com_offset
 
         # Run simulation step
-        sim.runOnce(manip_force, manip_pos_local)
+        sim.runOnce(manip_force)
 
         # Sleep and increment time
         time.sleep(sim.dt)
@@ -156,4 +181,8 @@ def demo():
 
 
 if __name__ == "__main__":
-    demo()
+    # demo()
+
+    rospy.init_node("sim_test_mpc_cart")
+    sim = SimTestMpcCart()
+    rospy.spin()
