@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   roscpp
   rospy
+  rosbag
   nmpc_ddp
   )
 
@@ -38,6 +39,7 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   rospy
+  rosbag
   nmpc_ddp
   DEPENDS EIGEN3
   INCLUDE_DIRS include
