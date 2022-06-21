@@ -46,11 +46,13 @@ $ catkin build data_driven_mpc -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLIBTORCH_PATH
 Make sure that it is built with `--catkin-make-args tests` option.
 
 ### [MPC for Van der Pol oscillator](tests/src/TestMpcOscillator.cpp)
+Control the [Van der Pol oscillator](https://web.casadi.org/docs/#a-simple-test-problem) by the learned state equation.
 ```bash
 $ rosrun data_driven_mpc TestMpcOscillator
 ```
 
 ### [MPC for walking with pushing](tests/src/TestMpcPushWalk.cpp)
+Control the CoM motion of robot and object by combining the known CoM-ZMP model and the learned object dynamics model.
 ```bash
 $ rosrun data_driven_mpc TestMpcPushWalk --gtest_filter=*.RunMPC
 $ rosrun data_driven_mpc plotTestMpcPushWalk.py

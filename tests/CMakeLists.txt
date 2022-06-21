@@ -5,6 +5,7 @@ set(DDMPC_gtest_list
   TestTraining
   TestMpcOscillator
   TestMpcPushWalk
+  TestMpcCart
   )
 
 foreach(NAME IN LISTS DDMPC_gtest_list)
