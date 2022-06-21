@@ -10,8 +10,8 @@ from data_driven_mpc.srv import *
 
 # Setup ROS
 rospy.init_node("sample_client_sim_test_mpc_cart")
-run_sim_once_srv = rospy.ServiceProxy("/run_sim_once", RunSimOnce)
-generate_dataset_srv = rospy.ServiceProxy("/generate_dataset", GenerateDataset)
+run_sim_once_cli = rospy.ServiceProxy("/run_sim_once", RunSimOnce)
+generate_dataset_cli = rospy.ServiceProxy("/generate_dataset", GenerateDataset)
 
 # Generate dataset
 rospy.wait_for_service("/generate_dataset")
@@ -24,7 +24,7 @@ req.state_max = np.array([1.0, 1.0, np.deg2rad(30), np.deg2rad(60)])
 req.state_min = -1 * req.state_max
 req.input_max = np.array([100.0, 100.0])
 req.input_min = -1 * req.input_max
-generate_dataset_srv(req)
+generate_dataset_cli(req)
 
 # Set initial state
 rospy.wait_for_service("/run_sim_once")
@@ -33,7 +33,7 @@ req = RunSimOnceRequest()
 req.dt = 0.0
 req.state = [0.0, 1.0, np.deg2rad(-10.0), 0.0]
 req.input = [0.0, 0.0]
-res = run_sim_once_srv(req)
+res = run_sim_once_cli(req)
 state = np.array(res.state)
 
 # Setup variables
@@ -63,7 +63,7 @@ while True:
     req.dt = dt
     req.state = []
     req.input = [0.0, manip_force_z]
-    res = run_sim_once_srv(req)
+    res = run_sim_once_cli(req)
     state = np.array(res.state)
 
     # Sleep and increment time
