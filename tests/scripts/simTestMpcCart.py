@@ -94,10 +94,10 @@ class SimTestMpcCart(object):
 
             # Visualize external force
             force_scale = 0.01
-            self.force_line_uid = pybullet.addUserDebugLine(lineFromXYZ=ext_pos,
-                                                            lineToXYZ=ext_pos + force_scale * ext_force,
+            self.force_line_uid = pybullet.addUserDebugLine(lineFromXYZ=manip_pos,
+                                                            lineToXYZ=manip_pos + force_scale * manip_force,
                                                             lineColorRGB=[1, 0, 0],
-                                                            lineWidth=10.0,
+                                                            lineWidth=5.0,
                                                             replaceItemUniqueId=self.force_line_uid)
         else:
             # Delete external force
@@ -135,12 +135,25 @@ class SimTestMpcCart(object):
                                    angularVelocity=angular_vel)
 
 
-if __name__ == "__main__":
+def demo():
     sim = SimTestMpcCart()
+    sim.setState([0.3, 1.0, np.deg2rad(-10.0), 0.0])
+
     t = 0.0 # [sec]
-    sim.setState([0.2, 1.0, np.deg2rad(0), 0])
     while t < 30.0:
-        sim.runOnce()
+        # Set manipulation force
+        _, _, theta, theta_dot = sim.getState()
+        manip_force_z = -500.0 * theta -100.0 * theta_dot # [N]
+        manip_force = np.array([0.0, 0.0, manip_force_z])
+        manip_pos_local = np.array([-1 * sim.box_half_scale[0], 0.0, sim.box_half_scale[2]]) - sim.box_com_offset
+
+        # Run simulation step
+        sim.runOnce(manip_force, manip_pos_local)
+
+        # Sleep and increment time
         time.sleep(sim.dt)
-        print(sim.getState())
         t += sim.dt
+
+
+if __name__ == "__main__":
+    demo()
