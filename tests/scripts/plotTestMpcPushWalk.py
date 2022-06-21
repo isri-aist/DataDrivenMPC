@@ -4,10 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class PlotTestMpcLocomanipPush(object):
+class PlotTestMpcPushWalk(object):
     def __init__(self, result_file_path):
         self.result_data_list = np.genfromtxt(result_file_path, dtype=None, delimiter=None, names=True)
-        print("[PlotTestMpcLocomanipPush] Load {}".format(result_file_path))
+        print("[PlotTestMpcPushWalk] Load {}".format(result_file_path))
 
         fig = plt.figure()
         plt.rcParams["font.size"] = 16
@@ -52,10 +52,10 @@ class PlotTestMpcLocomanipPush(object):
 
 
 if __name__ == "__main__":
-    result_file_path = "/tmp/TestMpcLocomanipPushResult.txt"
+    result_file_path = "/tmp/TestMpcPushWalkResult.txt"
 
     import sys
     if len(sys.argv) >= 2:
         result_file_path = sys.argv[1]
 
-    plot = PlotTestMpcLocomanipPush(result_file_path)
+    plot = PlotTestMpcPushWalk(result_file_path)

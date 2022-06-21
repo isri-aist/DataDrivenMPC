@@ -219,7 +219,7 @@ protected:
   double obj_grasp_height_ = 1.0; // [m]
 };
 
-TEST(TestMpcLocomanipPush, RunMPC)
+TEST(TestMpcPushWalk, RunMPC)
 {
   //// 1. Train state equation ////
   double horizon_dt = 0.1; // [sec]
@@ -336,7 +336,7 @@ TEST(TestMpcLocomanipPush, RunMPC)
   // Training model
   auto start_train_time = std::chrono::system_clock::now();
   DDMPC::Training training;
-  std::string model_path = "/tmp/TestMpcLocomanipPushModel.pt";
+  std::string model_path = "/tmp/TestMpcPushWalkModel.pt";
   int batch_size = 256;
   int num_epoch = 200;
   training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch);
@@ -376,7 +376,7 @@ TEST(TestMpcLocomanipPush, RunMPC)
 
   // Run MPC loop
   bool first_iter = true;
-  std::string file_path = "/tmp/TestMpcLocomanipPushResult-" + damper_type_str + ".txt";
+  std::string file_path = "/tmp/TestMpcPushWalkResult-" + damper_type_str + ".txt";
   std::ofstream ofs(file_path);
   ofs << "time robot_com_pos robot_com_vel obj_com_pos obj_com_vel robot_zmp obj_force ref_obj_com_pos ref_robot_zmp "
          "ddp_iter computation_time"
@@ -442,7 +442,7 @@ TEST(TestMpcLocomanipPush, RunMPC)
             << "  plot \"" << file_path << "\" u 1:7 w lp\n";
 }
 
-TEST(TestMpcLocomanipPush, CheckDerivatives)
+TEST(TestMpcPushWalk, CheckDerivatives)
 {
   constexpr double deriv_eps = 1e-4;
 
