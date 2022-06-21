@@ -29,28 +29,28 @@ class SimTestMpcCart(object):
         pybullet.loadURDF("plane100.urdf")
 
         ## Setup cart
-        box_half_scale = np.array([0.35, 0.25, 0.15]) # [m]
+        self.box_half_scale = np.array([0.35, 0.25, 0.15]) # [m]
         box_col_shape_idx = pybullet.createCollisionShape(pybullet.GEOM_BOX,
-                                                          halfExtents=box_half_scale)
-        cylinder_radius = 0.1 # [m]
+                                                          halfExtents=self.box_half_scale)
+        self.cylinder_radius = 0.1 # [m]
         cylinder_height = 0.1 # [m]
         cylinder_col_shape_idx = pybullet.createCollisionShape(pybullet.GEOM_CYLINDER,
-                                                               radius=cylinder_radius,
+                                                               radius=self.cylinder_radius,
                                                                height=cylinder_height)
         box_mass = 10.0 # [kg]
-        box_com_offset = np.array([0.0, 0.0, -0.1]) # [m]
+        self.box_com_offset = np.array([0.0, 0.0, -0.1]) # [m]
         cylinder_mass = 1.0 # [kg]
         self.cart_body_uid = pybullet.createMultiBody(baseMass=box_mass,
                                                       baseCollisionShapeIndex=box_col_shape_idx,
                                                       baseVisualShapeIndex=-1,
-                                                      basePosition=[0.0, 0.0, 2 * cylinder_radius + box_half_scale[2]], # [m]
+                                                      basePosition=[0.0, 0.0, 2 * self.cylinder_radius + self.box_half_scale[2]], # [m]
                                                       baseOrientation=[0.0, 0.0, 0.0, 1.0],
-                                                      baseInertialFramePosition=box_com_offset,
+                                                      baseInertialFramePosition=self.box_com_offset,
                                                       baseInertialFrameOrientation=[0.0, 0.0, 0.0, 1.0],
                                                       linkMasses=[cylinder_mass],
                                                       linkCollisionShapeIndices=[cylinder_col_shape_idx],
                                                       linkVisualShapeIndices=[-1],
-                                                      linkPositions=[[0.0, 0.0, -1 * (cylinder_radius + box_half_scale[2])]], # [m]
+                                                      linkPositions=[[0.0, 0.0, -1 * (self.cylinder_radius + self.box_half_scale[2])]], # [m]
                                                       linkOrientations=[pybullet.getQuaternionFromEuler([np.pi/2, 0.0, 0.0])],
                                                       linkInertialFramePositions=[[0.0, 0.0, 0.0]], # [m]
                                                       linkInertialFrameOrientations=[[0.0, 0.0, 0.0, 1.0]],
@@ -105,11 +105,42 @@ class SimTestMpcCart(object):
                 pybullet.removeUserDebugItem(self.force_line_uid)
                 self.force_line_uid = -1
 
+    def getState(self):
+        """"Get state [p, p_dot, theta, theta_dot]."""
+        cylinder_link_state = pybullet.getLinkState(bodyUniqueId=self.cart_body_uid, linkIndex=0, computeLinkVelocity=True)
+        p = cylinder_link_state[4][0] # [m]
+        p_dot = cylinder_link_state[6][0] # [m/s]
+        theta = pybullet.getEulerFromQuaternion(
+            pybullet.getBasePositionAndOrientation(bodyUniqueId=self.cart_body_uid)[1])[1] # [rad]
+        theta_dot = pybullet.getBaseVelocity(bodyUniqueId=self.cart_body_uid)[1][1] # [rad/s]
+        return np.array([p, p_dot, theta, theta_dot])
+
+    def setState(self, state):
+        """Set state [p, p_dot, theta, theta_dot]."""
+        p, p_dot, theta, theta_dot = state
+        local_pos_from_cylinder_to_box = np.array(
+            [self.box_com_offset[0], 0.0, self.cylinder_radius + self.box_half_scale[2] + self.box_com_offset[2]])
+        global_pos_from_cylinder_to_box = np.array(
+            e.AngleAxisd(theta, e.Vector3d.UnitY()).toRotationMatrix()).dot(local_pos_from_cylinder_to_box)
+        box_pos = np.array([p, 0.0, self.cylinder_radius]) + global_pos_from_cylinder_to_box
+        box_rot = pybullet.getQuaternionFromEuler([0.0, theta, 0.0])
+        pybullet.resetBasePositionAndOrientation(bodyUniqueId=self.cart_body_uid,
+                                                 posObj=box_pos,
+                                                 ornObj=box_rot)
+        linear_vel = np.array([p_dot, 0.0, 0.0]) + \
+                     theta_dot * np.array(e.Vector3d.UnitY().cross(e.Vector3d(global_pos_from_cylinder_to_box))).flatten()
+        angular_vel = np.array([0.0, theta_dot, 0.0])
+        pybullet.resetBaseVelocity(objectUniqueId=self.cart_body_uid,
+                                   linearVelocity=linear_vel,
+                                   angularVelocity=angular_vel)
+
 
 if __name__ == "__main__":
     sim = SimTestMpcCart()
     t = 0.0 # [sec]
+    sim.setState([0.2, 1.0, np.deg2rad(0), 0])
     while t < 30.0:
         sim.runOnce()
         time.sleep(sim.dt)
+        print(sim.getState())
         t += sim.dt
