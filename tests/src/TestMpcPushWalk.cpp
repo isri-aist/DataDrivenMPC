@@ -369,7 +369,8 @@ TEST(TestMpcPushWalk, RunMPC)
   std::string model_path = "/tmp/TestMpcPushWalkModel.pt";
   int batch_size = 256;
   int num_epoch = 200;
-  training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch);
+  double learning_rate = 5e-3;
+  training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch, learning_rate);
   std::cout << "train duration: "
             << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now()
                                                                          - start_train_time)

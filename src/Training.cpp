@@ -21,7 +21,8 @@ void Training::run(const std::shared_ptr<StateEq> & state_eq,
                    const std::shared_ptr<Dataset> & test_dataset,
                    const std::string & model_path,
                    int batch_size,
-                   int num_epoch)
+                   int num_epoch,
+                   double learning_rate)
 {
   // Make data loader for train and test
   auto train_data_loader = torch::data::make_data_loader<torch::data::samplers::RandomSampler>(
@@ -39,7 +40,7 @@ void Training::run(const std::shared_ptr<StateEq> & state_eq,
   model_ptr->to(*device_);
 
   // Make optimizer
-  torch::optim::Adam optimizer(model_ptr->parameters(), torch::optim::AdamOptions(0.005));
+  torch::optim::Adam optimizer(model_ptr->parameters(), torch::optim::AdamOptions(learning_rate));
 
   // Learn
   if(debug_)

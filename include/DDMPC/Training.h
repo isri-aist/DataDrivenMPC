@@ -23,13 +23,15 @@ public:
       \param model_path path to save model parameters
       \param batch_size batch size for train and test
       \param num_epoch nubmer of epoch for learning
+      \param learning_rate learning rate
    */
   void run(const std::shared_ptr<StateEq> & state_eq,
            const std::shared_ptr<Dataset> & train_dataset,
            const std::shared_ptr<Dataset> & test_dataset,
            const std::string & model_path,
            int batch_size = 64,
-           int num_epoch = 100);
+           int num_epoch = 100,
+           double learning_rate = 1e-3);
 
 public:
   //! Whether to enable debug print
