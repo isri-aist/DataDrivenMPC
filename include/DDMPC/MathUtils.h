@@ -41,6 +41,30 @@ public:
     return (data.rowwise() - mean_vec_).array().rowwise() / stddev_vec_.array();
   }
 
+  /*! \brief Apply standardization.
+      \param data single data to apply standardization
+   */
+  Vector applyOne(const Vector & data) const
+  {
+    return (data - mean_vec_.transpose()).array() / stddev_vec_.transpose().array();
+  }
+
+  /*! \brief Apply inverse standardization.
+      \param data data to apply inverse standardization
+   */
+  Matrix applyInv(const Matrix & data) const
+  {
+    return (data.array().rowwise() * stddev_vec_.array()).matrix().rowwise() + mean_vec_;
+  }
+
+  /*! \brief Apply inverse standardization.
+      \param data single data to apply inverse standardization
+   */
+  Vector applyOneInv(const Vector & data) const
+  {
+    return data.cwiseProduct(stddev_vec_.transpose()) + mean_vec_.transpose();
+  }
+
   /*! \brief Calculate mean. */
   static RowVector calcMean(const Matrix & data_all)
   {

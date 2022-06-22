@@ -16,10 +16,10 @@ void testStandardScaler()
 
   // Apply standardization
   DDMPC::StandardScaler<double, DataDim> standard_scaler(train_data);
-  Eigen::MatrixXd standardized_train_data = standard_scaler.apply(train_data);
-  Eigen::MatrixXd standardized_test_data = standard_scaler.apply(test_data);
+  Eigen::MatrixX3d standardized_train_data = standard_scaler.apply(train_data);
+  Eigen::MatrixX3d standardized_test_data = standard_scaler.apply(test_data);
 
-  // Check train data
+  // Check standardized train data
   {
     Eigen::RowVector3d mean = DDMPC::StandardScaler<double, DataDim>::calcMean(standardized_train_data);
     Eigen::RowVector3d stddev = DDMPC::StandardScaler<double, DataDim>::calcStddev(standardized_train_data, mean);
@@ -27,12 +27,24 @@ void testStandardScaler()
     EXPECT_LT((stddev.array() - 1.0).matrix().norm(), 1e-10);
   }
 
-  // Check test data
+  // Check standardized test data
   {
     Eigen::RowVector3d mean = DDMPC::StandardScaler<double, DataDim>::calcMean(standardized_test_data);
     Eigen::RowVector3d stddev = DDMPC::StandardScaler<double, DataDim>::calcStddev(standardized_test_data, mean);
     EXPECT_LT(mean.norm(), 0.1);
     EXPECT_LT((stddev.array() - 1.0).matrix().norm(), 0.1);
+  }
+
+  // Check inverse standardization
+  {
+    Eigen::MatrixX3d restored_test_data = standard_scaler.applyInv(standardized_test_data);
+    EXPECT_LT((test_data - restored_test_data).norm(), 1e-10);
+
+    Eigen::Vector3d single_test_data = test_data.row(0).transpose();
+    EXPECT_LT((single_test_data - standard_scaler.applyOneInv(standard_scaler.applyOne(single_test_data))).norm(),
+              1e-10);
+    EXPECT_LT((single_test_data - standard_scaler.applyOne(standard_scaler.applyOneInv(single_test_data))).norm(),
+              1e-10);
   }
 }
 
