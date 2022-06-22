@@ -85,9 +85,6 @@ class SimTestMpcCart(object):
         Args:
             manip_force manipulation force in world frame
         """
-        # Process simulation step
-        pybullet.stepSimulation()
-
         if manip_force is not None:
             # Apply manipulation force
             box_link_pos, box_link_rot = pybullet.getBasePositionAndOrientation(bodyUniqueId=self.cart_body_uid)
@@ -113,6 +110,9 @@ class SimTestMpcCart(object):
             if self.force_line_uid != -1:
                 pybullet.removeUserDebugItem(self.force_line_uid)
                 self.force_line_uid = -1
+
+        # Process simulation step
+        pybullet.stepSimulation()
 
     def getState(self):
         """"Get state [p, p_dot, theta, theta_dot]."""
