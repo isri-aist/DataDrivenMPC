@@ -30,7 +30,7 @@ public:
   StandardScaler(const Matrix & data_all)
   {
     mean_vec_ = calcMean(data_all);
-    stddev_vec_ = calcStddev(data_all, mean_vec_).array() + 1e-6; // Add small value to avoid zero devision
+    stddev_vec_ = calcStddev(data_all, mean_vec_).cwiseMax(1e-6); // Set minimum to avoid zero devision
   }
 
   /*! \brief Apply standardization.
