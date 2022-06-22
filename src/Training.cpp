@@ -35,7 +35,7 @@ void Training::run(const std::shared_ptr<StateEq> & state_eq,
     std::cout << "  - batch_size: " << batch_size << std::endl;
   }
 
-  // Make model
+  // Setup model
   auto model_ptr = state_eq->model_ptr_;
   model_ptr->to(*device_);
 
@@ -110,7 +110,14 @@ void Training::run(const std::shared_ptr<StateEq> & state_eq,
 
 void Training::load(const std::shared_ptr<StateEq> & state_eq, const std::string & model_path) const
 {
+  // Setup model
   auto model_ptr = state_eq->model_ptr_;
   model_ptr->to(*device_);
+
+  // Load model parameters
+  if(debug_)
+  {
+    std::cout << "Load model from " << model_path << std::endl;
+  }
   torch::load(model_ptr, model_path);
 }
