@@ -483,9 +483,18 @@ TEST(TestMpcPushWalk, CheckDerivatives)
   auto state_eq = std::make_shared<DDMPC::StateEq>(obj_state_dim, obj_input_dim, middle_layer_dim);
   auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq);
 
+  int dataset_size = 1000;
+  Eigen::MatrixXd state_all = 1.0 * Eigen::MatrixXd::Random(dataset_size, obj_state_dim);
+  Eigen::MatrixXd input_all = 100.0 * Eigen::MatrixXd::Random(dataset_size, obj_input_dim);
+  Eigen::MatrixXd next_state_all = 10.0 * Eigen::MatrixXd::Random(dataset_size, obj_state_dim);
+  auto state_standard_scaler = std::make_shared<DDMPC::StandardScaler<double, 2>>(state_all);
+  auto input_standard_scaler = std::make_shared<DDMPC::StandardScaler<double, 1>>(input_all);
+  auto next_state_standard_scaler = std::make_shared<DDMPC::StandardScaler<double, 2>>(next_state_all);
+  ddp_problem->setStandardScaler(state_standard_scaler, input_standard_scaler, next_state_standard_scaler);
+
   double t = 0;
-  DDPProblem::StateDimVector x = DDPProblem::StateDimVector::Random();
-  DDPProblem::InputDimVector u = DDPProblem::InputDimVector::Random();
+  DDPProblem::StateDimVector x(0.1, -0.2, 0.3, -0.4);
+  DDPProblem::InputDimVector u(10.0, -20.0);
 
   DDPProblem::StateStateDimMatrix state_eq_deriv_x_analytical;
   DDPProblem::StateInputDimMatrix state_eq_deriv_u_analytical;
@@ -508,14 +517,14 @@ TEST(TestMpcPushWalk, CheckDerivatives)
         / (2 * deriv_eps);
   }
 
-  EXPECT_LT((state_eq_deriv_x_analytical - state_eq_deriv_x_numerical).norm(), 1e-3)
+  EXPECT_LT((state_eq_deriv_x_analytical - state_eq_deriv_x_numerical).norm(), 1e-2)
       << "state_eq_deriv_x_analytical:\n"
       << state_eq_deriv_x_analytical << std::endl
       << "state_eq_deriv_x_numerical:\n"
       << state_eq_deriv_x_numerical << std::endl
       << "state_eq_deriv_x_error:\n"
       << state_eq_deriv_x_analytical - state_eq_deriv_x_numerical << std::endl;
-  EXPECT_LT((state_eq_deriv_u_analytical - state_eq_deriv_u_numerical).norm(), 1e-3)
+  EXPECT_LT((state_eq_deriv_u_analytical - state_eq_deriv_u_numerical).norm(), 1e-2)
       << "state_eq_deriv_u_analytical:\n"
       << state_eq_deriv_u_analytical << std::endl
       << "state_eq_deriv_u_numerical:\n"
