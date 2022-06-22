@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['eval',['eval',['../classDDMPC_1_1StateEq.html#ae6dc8f0dad61ff6b0182975f8cc9cd08',1,'DDMPC::StateEq::eval(const Eigen::VectorXd &amp;x, const Eigen::VectorXd &amp;u)'],['../classDDMPC_1_1StateEq.html#a5b48ca62ff360457eb556abe35226a6e',1,'DDMPC::StateEq::eval(const Eigen::VectorXd &amp;x, const Eigen::VectorXd &amp;u, Eigen::Ref&lt; Eigen::MatrixXd &gt; grad_x, Eigen::Ref&lt; Eigen::MatrixXd &gt; grad_u)']]]
+  ['calcmean',['calcMean',['../classDDMPC_1_1StandardScaler.html#a2d4f570cd115d2ee40ab262bb7590f66',1,'DDMPC::StandardScaler']]],
+  ['calcstddev',['calcStddev',['../classDDMPC_1_1StandardScaler.html#af09670fb860af49fb607b443833682c5',1,'DDMPC::StandardScaler']]]
 ];

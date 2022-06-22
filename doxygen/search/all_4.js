@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['input_5f',['input_',['../classDDMPC_1_1Data.html#a9a831edaf45f2466a88811e5234cc645',1,'DDMPC::Data::input_()'],['../classDDMPC_1_1Dataset.html#ac64c294f2ae51646dad9c37e677cca8f',1,'DDMPC::Dataset::input_()']]],
-  ['input_5fdim_5f',['input_dim_',['../classDDMPC_1_1StateEq_1_1Model.html#abc890e0e56d1d7d269c8d6fe044ebd17',1,'DDMPC::StateEq::Model']]],
-  ['inputdim',['inputDim',['../classDDMPC_1_1StateEq.html#a00e306a82d09c0927d399f793c397e8a',1,'DDMPC::StateEq']]]
+  ['forward',['forward',['../classDDMPC_1_1StateEq_1_1Model.html#a57b3a8477290e568a471a9985152e013',1,'DDMPC::StateEq::Model::forward(torch::Tensor &amp;x, torch::Tensor &amp;u, bool enable_auto_grad=true)'],['../classDDMPC_1_1StateEq_1_1Model.html#a5df0967cd720ed2b223e65ec6093f016',1,'DDMPC::StateEq::Model::forward(torch::Tensor &amp;x, torch::Tensor &amp;u, torch::Tensor &amp;grad_x, torch::Tensor &amp;grad_u, bool enable_auto_grad=true)']]]
 ];

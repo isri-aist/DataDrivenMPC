@@ -1,9 +1,6 @@
 var searchData=
 [
-  ['makebatchtensor',['makeBatchTensor',['../namespaceDDMPC.html#ae5fa2ee26060bd5ea037a11450666545',1,'DDMPC']]],
-  ['makedataset',['makeDataset',['../namespaceDDMPC.html#a91b9f746e00d7843d6c6664edeac906d',1,'DDMPC']]],
-  ['matrixxdrowmajor',['MatrixXdRowMajor',['../namespaceDDMPC.html#a56571d135be9f7d1c8a983f241323920',1,'DDMPC']]],
-  ['matrixxfrowmajor',['MatrixXfRowMajor',['../namespaceDDMPC.html#a6fc5899e7481e3f34a1585ead5462cdd',1,'DDMPC']]],
-  ['model',['Model',['../classDDMPC_1_1StateEq_1_1Model.html',1,'DDMPC::StateEq::Model'],['../classDDMPC_1_1StateEq_1_1Model.html#a1db67cde19ac0156c901c273c195895b',1,'DDMPC::StateEq::Model::Model()']]],
-  ['model_5fptr_5f',['model_ptr_',['../classDDMPC_1_1StateEq.html#aed4e075e758d6a71d3bfcaecb2fac878',1,'DDMPC::StateEq']]]
+  ['input_5f',['input_',['../classDDMPC_1_1Data.html#a9a831edaf45f2466a88811e5234cc645',1,'DDMPC::Data::input_()'],['../classDDMPC_1_1Dataset.html#ac64c294f2ae51646dad9c37e677cca8f',1,'DDMPC::Dataset::input_()']]],
+  ['input_5fdim_5f',['input_dim_',['../classDDMPC_1_1StateEq_1_1Model.html#abc890e0e56d1d7d269c8d6fe044ebd17',1,'DDMPC::StateEq::Model']]],
+  ['inputdim',['inputDim',['../classDDMPC_1_1StateEq.html#a00e306a82d09c0927d399f793c397e8a',1,'DDMPC::StateEq']]]
 ];

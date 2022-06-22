@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['next_5fstate_5f',['next_state_',['../classDDMPC_1_1Data.html#a35eea6827ef1ade1517e1b81fa72ca11',1,'DDMPC::Data::next_state_()'],['../classDDMPC_1_1Dataset.html#a066e98ba16090a7d3c9735703c0698bd',1,'DDMPC::Dataset::next_state_()']]]
+  ['linear1_5f',['linear1_',['../classDDMPC_1_1StateEq_1_1Model.html#a54fbaa5eb0e59cb5fcea25b978a9cfe4',1,'DDMPC::StateEq::Model']]],
+  ['linear2_5f',['linear2_',['../classDDMPC_1_1StateEq_1_1Model.html#a5479c4ee2606306a1bcbae3a42c1339e',1,'DDMPC::StateEq::Model']]],
+  ['linear3_5f',['linear3_',['../classDDMPC_1_1StateEq_1_1Model.html#a3e2c506ac1a564f7c02f461a11ea7758',1,'DDMPC::StateEq::Model']]]
 ];

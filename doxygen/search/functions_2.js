@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['forward',['forward',['../classDDMPC_1_1StateEq_1_1Model.html#a57b3a8477290e568a471a9985152e013',1,'DDMPC::StateEq::Model::forward(torch::Tensor &amp;x, torch::Tensor &amp;u, bool enable_auto_grad=true)'],['../classDDMPC_1_1StateEq_1_1Model.html#a5df0967cd720ed2b223e65ec6093f016',1,'DDMPC::StateEq::Model::forward(torch::Tensor &amp;x, torch::Tensor &amp;u, torch::Tensor &amp;grad_x, torch::Tensor &amp;grad_u, bool enable_auto_grad=true)']]]
+  ['data',['Data',['../classDDMPC_1_1Data.html#a93180952f69279474bbb34049892d185',1,'DDMPC::Data']]],
+  ['dataset',['Dataset',['../classDDMPC_1_1Dataset.html#a2679d60b5eb1777cde6cd8fc3bd04a7c',1,'DDMPC::Dataset']]]
 ];
