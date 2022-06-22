@@ -249,7 +249,7 @@ TEST(TestMpcPushWalk, RunMPC)
   // Instantiate state equation
   int obj_state_dim = 2;
   int obj_input_dim = 1;
-  int middle_layer_dim = 4;
+  int middle_layer_dim = 8;
   auto state_eq = std::make_shared<DDMPC::StateEq>(obj_state_dim, obj_input_dim, middle_layer_dim);
 
   // Instantiate problem
