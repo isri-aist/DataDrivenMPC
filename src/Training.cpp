@@ -22,7 +22,7 @@ void Training::run(const std::shared_ptr<StateEq> & state_eq,
                    const std::string & model_path,
                    int batch_size,
                    int num_epoch,
-                   double learning_rate)
+                   double learning_rate) const
 {
   // Make data loader for train and test
   auto train_data_loader = torch::data::make_data_loader<torch::data::samplers::RandomSampler>(
@@ -106,4 +106,11 @@ void Training::run(const std::shared_ptr<StateEq> & state_eq,
       torch::save(model_ptr, model_path);
     }
   }
+}
+
+void Training::load(const std::shared_ptr<StateEq> & state_eq, const std::string & model_path) const
+{
+  auto model_ptr = state_eq->model_ptr_;
+  model_ptr->to(*device_);
+  torch::load(model_ptr, model_path);
 }

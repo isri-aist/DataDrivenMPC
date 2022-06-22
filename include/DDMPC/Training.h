@@ -31,7 +31,13 @@ public:
            const std::string & model_path,
            int batch_size = 64,
            int num_epoch = 100,
-           double learning_rate = 1e-3);
+           double learning_rate = 1e-3) const;
+
+  /*! \brief Load a model from file.
+      \param state_eq state equation
+      \param model_path path to load model parameters
+   */
+  void load(const std::shared_ptr<StateEq> & state_eq, const std::string & model_path) const;
 
 public:
   //! Whether to enable debug print
