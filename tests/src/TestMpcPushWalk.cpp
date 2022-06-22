@@ -8,6 +8,7 @@
 
 #include <nmpc_ddp/DDPSolver.h>
 
+#include <DDMPC/MathUtils.h>
 #include <DDMPC/TorchUtils.h>
 #include <DDMPC/Training.h>
 
@@ -91,7 +92,8 @@ public:
   {
     StateDimVector next_x;
     next_x.head<2>() = simulateRobot(x.head<2>(), u, dt_);
-    next_x.tail<2>() = state_eq_->eval(x.tail<2>(), u.tail<1>());
+    next_x.tail<2>() = next_state_standard_scaler_->applyOneInv(
+        state_eq_->eval(state_standard_scaler_->applyOne(x.tail<2>()), input_standard_scaler_->applyOne(u.tail<1>())));
 
     return next_x;
   }
@@ -133,8 +135,14 @@ public:
     state_eq_deriv_u(1, 1) = -1 * obj_grasp_height_ / (robot_mass_ * robot_com_height_);
     state_eq_deriv_u.topRows<2>() *= dt_;
 
-    state_eq_->eval(x.tail<2>(), u.tail<1>(), state_eq_deriv_x.bottomRightCorner<2, 2>(),
-                    state_eq_deriv_u.bottomRightCorner<2, 1>());
+    state_eq_->eval(state_standard_scaler_->applyOne(x.tail<2>()), input_standard_scaler_->applyOne(u.tail<1>()),
+                    state_eq_deriv_x.bottomRightCorner<2, 2>(), state_eq_deriv_u.bottomRightCorner<2, 1>());
+    state_eq_deriv_x.bottomRightCorner<2, 2>().array().colwise() *=
+        next_state_standard_scaler_->stddev_vec_.transpose().array();
+    state_eq_deriv_x.bottomRightCorner<2, 2>().array().rowwise() /= state_standard_scaler_->stddev_vec_.array();
+    state_eq_deriv_u.bottomRightCorner<2, 1>().array().colwise() *=
+        next_state_standard_scaler_->stddev_vec_.transpose().array();
+    state_eq_deriv_u.bottomRightCorner<2, 1>().array().rowwise() /= input_standard_scaler_->stddev_vec_.array();
   }
 
   virtual void calcStateEqDeriv(double t,
@@ -203,6 +211,16 @@ public:
     terminal_cost_deriv_xx.diagonal() = weight_param_.terminal_state;
   }
 
+  void setStandardScaler(const std::shared_ptr<DDMPC::StandardScaler<double, 2>> & state_standard_scaler,
+                         const std::shared_ptr<DDMPC::StandardScaler<double, 1>> & input_standard_scaler,
+                         const std::shared_ptr<DDMPC::StandardScaler<double, 2>> & next_state_standard_scaler)
+
+  {
+    state_standard_scaler_ = state_standard_scaler;
+    input_standard_scaler_ = input_standard_scaler;
+    next_state_standard_scaler_ = next_state_standard_scaler;
+  }
+
 protected:
   std::shared_ptr<DDMPC::StateEq> state_eq_;
 
@@ -211,6 +229,10 @@ protected:
   std::function<void(double, Eigen::Ref<StateDimVector>, Eigen::Ref<InputDimVector>)> ref_func_;
 
   WeightParam weight_param_;
+
+  std::shared_ptr<DDMPC::StandardScaler<double, 2>> state_standard_scaler_;
+  std::shared_ptr<DDMPC::StandardScaler<double, 1>> input_standard_scaler_;
+  std::shared_ptr<DDMPC::StandardScaler<double, 2>> next_state_standard_scaler_;
 
   double gravity_acc_ = 9.8; // [m/s^2]
   double robot_mass_ = 100.0; // [kg]
@@ -322,11 +344,19 @@ TEST(TestMpcPushWalk, RunMPC)
         ddp_problem->simulateObj(state_all.row(i).transpose(), input_all.row(i).transpose(), horizon_dt).transpose();
   }
 
+  // Instantiate standardization scalar
+  auto state_standard_scaler = std::make_shared<DDMPC::StandardScaler<double, 2>>(state_all);
+  auto input_standard_scaler = std::make_shared<DDMPC::StandardScaler<double, 1>>(input_all);
+  auto next_state_standard_scaler = std::make_shared<DDMPC::StandardScaler<double, 2>>(next_state_all);
+  ddp_problem->setStandardScaler(state_standard_scaler, input_standard_scaler, next_state_standard_scaler);
+
   // Instantiate dataset
   std::shared_ptr<DDMPC::Dataset> train_dataset;
   std::shared_ptr<DDMPC::Dataset> test_dataset;
-  DDMPC::makeDataset(DDMPC::toTorchTensor(state_all.cast<float>()), DDMPC::toTorchTensor(input_all.cast<float>()),
-                     DDMPC::toTorchTensor(next_state_all.cast<float>()), train_dataset, test_dataset);
+  DDMPC::makeDataset(DDMPC::toTorchTensor(state_standard_scaler->apply(state_all).cast<float>()),
+                     DDMPC::toTorchTensor(input_standard_scaler->apply(input_all).cast<float>()),
+                     DDMPC::toTorchTensor(next_state_standard_scaler->apply(next_state_all).cast<float>()),
+                     train_dataset, test_dataset);
   std::cout << "dataset duration: "
             << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now()
                                                                          - start_dataset_time)
