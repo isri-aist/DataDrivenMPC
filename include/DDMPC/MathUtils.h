@@ -8,16 +8,20 @@ namespace DDMPC
 {
 /*! \brief Class of standardization (i.e., mean removal and variance scaling).
     \tparam Scalar scalar type
+    \tparam DataDim data dimension
  */
-template<class Scalar>
+template<class Scalar, int DataDim>
 class StandardScaler
 {
 public:
   /** \brief Type of matrix. */
-  using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+  using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, DataDim>;
+
+  /** \brief Type of column vector. */
+  using Vector = Eigen::Matrix<Scalar, DataDim, 1>;
 
   /** \brief Type of row vector. */
-  using RowVector = Eigen::Matrix<Scalar, 1, Eigen::Dynamic>;
+  using RowVector = Eigen::Matrix<Scalar, 1, DataDim>;
 
 public:
   /*! \brief Constructor.
