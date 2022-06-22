@@ -52,7 +52,7 @@ class PlotTestMpcPushWalk(object):
 
 
 if __name__ == "__main__":
-    result_file_path = "/tmp/TestMpcPushWalkResult.txt"
+    result_file_path = "/tmp/TestMpcPushWalkResult-Linear.txt"
 
     import sys
     if len(sys.argv) >= 2:
