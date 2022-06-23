@@ -34,6 +34,15 @@ jobs:
     env:
       ROS_DISTRO: melodic
     steps:
+      - name: Install Python dependencies # Only for tests
+        run: |
+          set -e
+          set -x
+          sudo apt-get update -qq
+          sudo apt install python-tk
+          python -m pip install --upgrade pip
+          # Due to numpy conflicts, it must be run before apt numpy is installed.
+          pip install numpy pybullet matplotlib
       - name: Install ROS
         run: |
           set -e
@@ -44,6 +53,8 @@ jobs:
           sudo apt-get install -qq ros-${ROS_DISTRO}-ros-base python-catkin-tools python-rosdep doxygen graphviz
       - name: Setup catkin workspace
         run: |
+          set -e
+          set -x
           mkdir -p ${GITHUB_WORKSPACE}/catkin_ws/src/
           cd ${GITHUB_WORKSPACE}/catkin_ws
           set +x

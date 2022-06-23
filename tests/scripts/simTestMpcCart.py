@@ -15,8 +15,8 @@ from data_driven_mpc.srv import *
 class SimTestMpcCart(object):
     def __init__(self):
         # Instantiate simulator
-        pybullet.connect(pybullet.GUI)
-        # pybullet.connect(pybullet.DIRECT)
+        # pybullet.connect(pybullet.GUI)
+        pybullet.connect(pybullet.DIRECT)
 
         # Set simulation parameters
         self.dt = 0.005 # [sec]
