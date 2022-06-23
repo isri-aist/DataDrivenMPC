@@ -164,6 +164,10 @@ TEST(TestMpcCart, Test1)
   ros::NodeHandle nh;
   ros::ServiceClient generate_dataset_cli = nh.serviceClient<data_driven_mpc::GenerateDataset>("/generate_dataset");
   ros::ServiceClient run_sim_once_cli = nh.serviceClient<data_driven_mpc::RunSimOnce>("/run_sim_once");
+  ASSERT_TRUE(generate_dataset_cli.waitForExistence(ros::Duration(10.0)))
+      << "[TestMpcCart] Failed to wait for ROS service to generate dataset." << std::endl;
+  ASSERT_TRUE(run_sim_once_cli.waitForExistence(ros::Duration(10.0)))
+      << "[TestMpcCart] Failed to wait for ROS service to run simulation once." << std::endl;
 
   //// 1. Train state equation ////
   double horizon_dt = 0.1; // [sec]
