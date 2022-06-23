@@ -42,9 +42,9 @@ class SimTestMpcCart(object):
         cylinder_col_shape_idx = pybullet.createCollisionShape(pybullet.GEOM_CYLINDER,
                                                                radius=self.cylinder_radius,
                                                                height=cylinder_height)
-        box_mass = 10.0 # [kg]
-        self.box_com_offset = np.array([0.0, 0.0, -0.1]) # [m]
-        cylinder_mass = 1.0 # [kg]
+        box_mass = 8.0 # [kg]
+        self.box_com_offset = np.array([-0.05, 0.0, -0.1]) # [m]
+        cylinder_mass = 2.0 # [kg]
         self.cart_body_uid = pybullet.createMultiBody(baseMass=box_mass,
                                                       baseCollisionShapeIndex=box_col_shape_idx,
                                                       baseVisualShapeIndex=-1,
