@@ -60,3 +60,9 @@ Control the CoM motion of robot and object by combining the known CoM-ZMP model 
 $ rosrun data_driven_mpc TestMpcPushWalk --gtest_filter=*.RunMPC
 $ rosrun data_driven_mpc plotTestMpcPushWalk.py
 ```
+
+### [MPC for walking with pushing](tests/src/TestMpcCart.cpp)
+Control the position and angle of the one wheel cart on the PyBullet dynamics simulator.
+```bash
+$ rostest data_driven_mpc TestMpcCart.test --text
+```
