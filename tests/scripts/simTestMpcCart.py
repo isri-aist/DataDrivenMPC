@@ -2,7 +2,6 @@
 
 import time
 import numpy as np
-import eigen as e
 import pybullet
 import pybullet_data
 import matplotlib.pyplot as plt
@@ -130,14 +129,14 @@ class SimTestMpcCart(object):
         local_pos_from_cylinder_to_box = np.array(
             [self.box_com_offset[0], 0.0, self.cylinder_radius + self.box_half_scale[2] + self.box_com_offset[2]])
         global_pos_from_cylinder_to_box = np.array(
-            e.AngleAxisd(theta, e.Vector3d.UnitY()).toRotationMatrix()).dot(local_pos_from_cylinder_to_box)
+            pybullet.getMatrixFromQuaternion(pybullet.getQuaternionFromEuler(
+                [0.0, theta, 0.0]))).reshape((3, 3)).dot(local_pos_from_cylinder_to_box)
         box_pos = np.array([p, 0.0, self.cylinder_radius]) + global_pos_from_cylinder_to_box
         box_rot = pybullet.getQuaternionFromEuler([0.0, theta, 0.0])
         pybullet.resetBasePositionAndOrientation(bodyUniqueId=self.cart_body_uid,
                                                  posObj=box_pos,
                                                  ornObj=box_rot)
-        linear_vel = np.array([p_dot, 0.0, 0.0]) + \
-                     theta_dot * np.array(e.Vector3d.UnitY().cross(e.Vector3d(global_pos_from_cylinder_to_box))).flatten()
+        linear_vel = np.array([p_dot, 0.0, 0.0]) + theta_dot * np.cross(np.array([0.0, 1.0, 0.0]), global_pos_from_cylinder_to_box)
         angular_vel = np.array([0.0, theta_dot, 0.0])
         pybullet.resetBaseVelocity(objectUniqueId=self.cart_body_uid,
                                    linearVelocity=linear_vel,
