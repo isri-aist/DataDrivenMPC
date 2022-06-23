@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['toeigenmatrix',['toEigenMatrix',['../namespaceDDMPC.html#a52f7e577663d86f9b09158934f555ab9',1,'DDMPC']]],
-  ['torch_5fmodule_5fimpl',['TORCH_MODULE_IMPL',['../classDDMPC_1_1StateEq.html#a284d0c3467572b72f5275bfeba2bb86e',1,'DDMPC::StateEq']]],
-  ['totorchtensor',['toTorchTensor',['../namespaceDDMPC.html#a8f57e44fe2d6aff74a8936a1e6d3e202',1,'DDMPC']]],
-  ['training',['Training',['../classDDMPC_1_1Training.html#ad641bb500d2f5d31b4ba5d08cbedf672',1,'DDMPC::Training']]]
+  ['size',['size',['../classDDMPC_1_1Dataset.html#a0ef638da8080d4f834953e565eb1f029',1,'DDMPC::Dataset']]],
+  ['standardscaler',['StandardScaler',['../classDDMPC_1_1StandardScaler.html#a1f7e2b6c092b874d9e3f5e6e3979ca01',1,'DDMPC::StandardScaler']]],
+  ['statedim',['stateDim',['../classDDMPC_1_1StateEq.html#a69ffc28f73252caf126a82473c9c3f4a',1,'DDMPC::StateEq']]],
+  ['stateeq',['StateEq',['../classDDMPC_1_1StateEq.html#ae060cb06dcd9bf282570ce23de954326',1,'DDMPC::StateEq']]]
 ];
