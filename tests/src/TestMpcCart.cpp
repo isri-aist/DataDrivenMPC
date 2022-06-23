@@ -187,7 +187,7 @@ TEST(TestMpcCart, Test1)
   std::string dataset_filename = ros::package::getPath("data_driven_mpc") + "/tests/data/TestMpcCartDataset.bag";
   int dataset_size = 100000;
   DDPProblem::StateDimVector x_max = DDPProblem::StateDimVector(1.0, 0.2, 0.4, 0.5);
-  DDPProblem::InputDimVector u_max = DDPProblem::InputDimVector(20.0, 20.0);
+  DDPProblem::InputDimVector u_max = DDPProblem::InputDimVector(15.0, 15.0);
   generate_dataset_srv.request.filename = dataset_filename;
   generate_dataset_srv.request.dataset_size = dataset_size;
   generate_dataset_srv.request.dt = horizon_dt;
@@ -341,7 +341,7 @@ TEST(TestMpcCart, Test1)
   EXPECT_LT(std::abs(current_x[2]), 0.15);
   EXPECT_LT(std::abs(current_x[3]), 0.5);
   EXPECT_LT(std::abs(current_u[0]), 10.0);
-  EXPECT_LT(std::abs(current_u[1]), 20.0);
+  EXPECT_LT(std::abs(current_u[1]), 15.0);
 
   std::cout << "Run the following commands in gnuplot:\n"
             << "  set key autotitle columnhead\n"

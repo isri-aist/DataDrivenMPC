@@ -64,5 +64,5 @@ $ rosrun data_driven_mpc plotTestMpcPushWalk.py
 ### [MPC for walking with pushing](tests/src/TestMpcCart.cpp)
 Control the position and angle of the one wheel cart on the PyBullet dynamics simulator.
 ```bash
-$ rostest data_driven_mpc TestMpcCart.test --text
+$ rostest data_driven_mpc TestMpcCart.test enable_gui:=true --text
 ```
