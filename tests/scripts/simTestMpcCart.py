@@ -13,10 +13,12 @@ from data_driven_mpc.srv import *
 
 
 class SimTestMpcCart(object):
-    def __init__(self):
+    def __init__(self, enable_gui):
         # Instantiate simulator
-        # pybullet.connect(pybullet.GUI)
-        pybullet.connect(pybullet.DIRECT)
+        if enable_gui:
+            pybullet.connect(pybullet.GUI)
+        else:
+            pybullet.connect(pybullet.DIRECT)
 
         # Set simulation parameters
         self.dt = 0.005 # [sec]
@@ -224,5 +226,5 @@ if __name__ == "__main__":
     # demo()
 
     rospy.init_node("sim_test_mpc_cart")
-    sim = SimTestMpcCart()
+    sim = SimTestMpcCart(enable_gui=rospy.get_param("~enable_gui", True))
     rospy.spin()
