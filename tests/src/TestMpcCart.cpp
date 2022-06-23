@@ -243,7 +243,7 @@ TEST(TestMpcCart, Test1)
   DDMPC::Training training;
   std::string model_path = ros::package::getPath("data_driven_mpc") + "/tests/data/TestMpcCartModel.pt";
   int batch_size = 256;
-  int num_epoch = 200;
+  int num_epoch = 250;
   double learning_rate = 1e-3;
   training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch, learning_rate);
   training.load(state_eq, model_path);
@@ -274,7 +274,7 @@ TEST(TestMpcCart, Test1)
   ddp_solver->setInputLimitsFunc(input_limits_func);
   ddp_solver->config().with_input_constraint = true;
   ddp_solver->config().horizon_steps = horizon_steps;
-  ddp_solver->config().max_iter = 3;
+  ddp_solver->config().max_iter = 5;
 
   // Initialize MPC
   double sim_dt = 0.05; // [sec]
@@ -309,11 +309,11 @@ TEST(TestMpcCart, Test1)
     // Check
     for(int i = 0; i < state_dim; i++)
     {
-      EXPECT_LE(std::abs(current_x[i]), 2 * x_max[i]) << "[TestMpcCart] Violate x[" << i << "] limits." << std::endl;
+      EXPECT_LE(std::abs(current_x[i]), 5 * x_max[i]) << "[TestMpcCart] Violate x[" << i << "] limits." << std::endl;
     }
     for(int i = 0; i < input_dim; i++)
     {
-      EXPECT_LE(std::abs(current_u[i]), 2 * u_max[i]) << "[TestMpcCart] Violate u[" << i << "] limits." << std::endl;
+      EXPECT_LE(std::abs(current_u[i]), 5 * u_max[i]) << "[TestMpcCart] Violate u[" << i << "] limits." << std::endl;
     }
 
     // Dump
@@ -336,10 +336,10 @@ TEST(TestMpcCart, Test1)
 
   // Final check
   const DDPProblem::InputDimVector & current_u = ddp_solver->controlData().u_list[0];
-  EXPECT_LT(std::abs(current_x[0]), 0.1);
-  EXPECT_LT(std::abs(current_x[1]), 0.1);
-  EXPECT_LT(std::abs(current_x[2]), 0.1);
-  EXPECT_LT(std::abs(current_x[3]), 0.1);
+  EXPECT_LT(std::abs(current_x[0]), 0.15);
+  EXPECT_LT(std::abs(current_x[1]), 0.5);
+  EXPECT_LT(std::abs(current_x[2]), 0.15);
+  EXPECT_LT(std::abs(current_x[3]), 0.5);
   EXPECT_LT(std::abs(current_u[0]), 10.0);
   EXPECT_LT(std::abs(current_u[1]), 20.0);
 
