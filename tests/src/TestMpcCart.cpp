@@ -30,9 +30,9 @@ public:
     InputDimVector running_input;
     StateDimVector terminal_state;
 
-    WeightParam(const StateDimVector & _running_state = StateDimVector(1e2, 1e-3, 1e0, 1e-2),
-                const InputDimVector & _running_input = InputDimVector::Constant(1e-1),
-                const StateDimVector & _terminal_state = StateDimVector(1e2, 1e-1, 1e0, 1e-1))
+    WeightParam(const StateDimVector & _running_state = StateDimVector(1e2, 1e-3, 1e1, 1e-2),
+                const InputDimVector & _running_input = InputDimVector::Constant(1e-2),
+                const StateDimVector & _terminal_state = StateDimVector(1e2, 1e-1, 1e2, 1e-1))
     : running_state(_running_state), running_input(_running_input), terminal_state(_terminal_state)
     {
     }
@@ -182,7 +182,7 @@ TEST(TestMpcCart, Test1)
   data_driven_mpc::GenerateDataset generate_dataset_srv;
   std::string dataset_filename = ros::package::getPath("data_driven_mpc") + "/tests/data/TestMpcCartDataset.bag";
   int dataset_size = 100000;
-  DDPProblem::StateDimVector x_max = DDPProblem::StateDimVector(1.0, 0.2, 0.4, 0.4);
+  DDPProblem::StateDimVector x_max = DDPProblem::StateDimVector(1.0, 0.5, 0.4, 1.0);
   DDPProblem::InputDimVector u_max = DDPProblem::InputDimVector(20.0, 20.0);
   generate_dataset_srv.request.filename = dataset_filename;
   generate_dataset_srv.request.dataset_size = dataset_size;
@@ -305,11 +305,11 @@ TEST(TestMpcCart, Test1)
     // Check
     for(int i = 0; i < state_dim; i++)
     {
-      EXPECT_LE(std::abs(current_x[i]), x_max[i]);
+      EXPECT_LE(std::abs(current_x[i]), x_max[i]) << "[TestMpcCart] Violate x[" << i << "] limits." << std::endl;
     }
     for(int i = 0; i < input_dim; i++)
     {
-      EXPECT_LE(std::abs(current_u[i]), u_max[i]);
+      EXPECT_LE(std::abs(current_u[i]), u_max[i]) << "[TestMpcCart] Violate u[" << i << "] limits." << std::endl;
     }
 
     // Dump
