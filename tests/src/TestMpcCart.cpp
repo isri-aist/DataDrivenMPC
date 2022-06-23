@@ -162,6 +162,7 @@ using MatrixXdRowMajor = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, E
 TEST(TestMpcCart, Test1)
 {
   ros::NodeHandle nh;
+  ros::NodeHandle pnh("~");
   ros::ServiceClient generate_dataset_cli = nh.serviceClient<data_driven_mpc::GenerateDataset>("/generate_dataset");
   ros::ServiceClient run_sim_once_cli = nh.serviceClient<data_driven_mpc::RunSimOnce>("/run_sim_once");
   ASSERT_TRUE(generate_dataset_cli.waitForExistence(ros::Duration(10.0)))
@@ -287,7 +288,9 @@ TEST(TestMpcCart, Test1)
   std::string file_path = "/tmp/TestMpcCartResult.txt";
   std::ofstream ofs(file_path);
   ofs << "time p p_dot theta theta_dot fx fz ddp_iter computation_time" << std::endl;
-  while(current_t < end_t)
+  bool no_exit = false;
+  pnh.getParam("no_exit", no_exit);
+  while(no_exit || current_t < end_t)
   {
     // Solve
     auto start_time = std::chrono::system_clock::now();

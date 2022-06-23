@@ -1,9 +1,13 @@
 <launch>
+  <arg name="no_exit" default="false" />
   <arg name="enable_gui" default="false" />
 
   <test test-name="test_mpc_cart"
         pkg="data_driven_mpc" type="TestMpcCart" name="test_mpc_cart"
         time-limit="1800.0">
+    <rosparam subst_value="true">
+      no_exit: $(arg no_exit)
+    </rosparam>
   </test>
 
   <node pkg="data_driven_mpc" type="simTestMpcCart.py" name="sim_test_mpc_cart">
