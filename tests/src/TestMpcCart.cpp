@@ -30,9 +30,9 @@ public:
     InputDimVector running_input;
     StateDimVector terminal_state;
 
-    WeightParam(const StateDimVector & _running_state = StateDimVector(10.0, 0.1, 10.0, 0.1),
-                const InputDimVector & _running_input = InputDimVector::Constant(0.1),
-                const StateDimVector & _terminal_state = StateDimVector::Constant(1.0))
+    WeightParam(const StateDimVector & _running_state = StateDimVector(1e2, 1e-3, 1e0, 1e-2),
+                const InputDimVector & _running_input = InputDimVector::Constant(1e-1),
+                const StateDimVector & _terminal_state = StateDimVector(1e2, 1e-1, 1e0, 1e-1))
     : running_state(_running_state), running_input(_running_input), terminal_state(_terminal_state)
     {
     }
@@ -171,7 +171,7 @@ TEST(TestMpcCart, Test1)
   // Instantiate state equation
   int state_dim = 4;
   int input_dim = 2;
-  int middle_layer_dim = 128;
+  int middle_layer_dim = 64;
   auto state_eq = std::make_shared<DDMPC::StateEq>(state_dim, input_dim, middle_layer_dim);
 
   // Instantiate problem
@@ -182,8 +182,8 @@ TEST(TestMpcCart, Test1)
   data_driven_mpc::GenerateDataset generate_dataset_srv;
   std::string dataset_filename = ros::package::getPath("data_driven_mpc") + "/tests/data/TestMpcCartDataset.bag";
   int dataset_size = 100000;
-  DDPProblem::StateDimVector x_max = DDPProblem::StateDimVector(1.0, 0.2, 0.4, 0.2);
-  DDPProblem::InputDimVector u_max = DDPProblem::InputDimVector(30.0, 20.0);
+  DDPProblem::StateDimVector x_max = DDPProblem::StateDimVector(1.0, 0.2, 0.4, 0.4);
+  DDPProblem::InputDimVector u_max = DDPProblem::InputDimVector(20.0, 20.0);
   generate_dataset_srv.request.filename = dataset_filename;
   generate_dataset_srv.request.dataset_size = dataset_size;
   generate_dataset_srv.request.dt = horizon_dt;
@@ -239,7 +239,7 @@ TEST(TestMpcCart, Test1)
   DDMPC::Training training;
   std::string model_path = ros::package::getPath("data_driven_mpc") + "/tests/data/TestMpcCartModel.pt";
   int batch_size = 256;
-  int num_epoch = 500;
+  int num_epoch = 200;
   double learning_rate = 1e-3;
   training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch, learning_rate);
   training.load(state_eq, model_path);
