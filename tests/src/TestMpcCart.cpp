@@ -186,7 +186,7 @@ TEST(TestMpcCart, Test1)
   auto start_dataset_time = std::chrono::system_clock::now();
   data_driven_mpc::GenerateDataset generate_dataset_srv;
   std::string dataset_filename = ros::package::getPath("data_driven_mpc") + "/tests/data/TestMpcCartDataset.bag";
-  int dataset_size = 100000;
+  int dataset_size = 10000;
   DDPProblem::StateDimVector x_max = DDPProblem::StateDimVector(1.0, 0.2, 0.4, 0.5);
   DDPProblem::InputDimVector u_max = DDPProblem::InputDimVector(15.0, 15.0);
   generate_dataset_srv.request.filename = dataset_filename;
