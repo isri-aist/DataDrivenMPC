@@ -262,7 +262,7 @@ TEST(TestMpcCart, Test1)
   //// 2. Run MPC ////
   double horizon_duration = 2.0; // [sec]
   int horizon_steps = static_cast<int>(horizon_duration / horizon_dt);
-  double end_t = 5.0; // [sec]
+  double end_t = 3.0; // [sec]
 
   // Instantiate solver
   auto ddp_solver = std::make_shared<nmpc_ddp::DDPSolver<4, 2>>(ddp_problem);
