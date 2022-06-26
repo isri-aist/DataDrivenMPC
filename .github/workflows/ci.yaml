@@ -122,6 +122,7 @@ jobs:
           git config --global user.email "m-murooka@aist.go.jp"
           git remote set-url origin "https://mmurooka:${{ secrets.CI_TOKEN }}@github.com/isri-aist/DataDrivenMPC"
           git fetch --depth=1 origin gh-pages:gh-pages
+          git clean -dfx
           git checkout --quiet gh-pages
           rm -rf doxygen/
           cp -r ${GITHUB_WORKSPACE}/catkin_ws/build/data_driven_mpc/doc/html/ doxygen

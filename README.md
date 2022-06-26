@@ -15,7 +15,7 @@ This package depends on
 - [libtorch (PyTorch C++ Frontend)](https://pytorch.org/cppdocs/installing.html)
 - [NMPC](https://github.com/isri-aist/NMPC)
 
-Some tests depend
+Some tests depend on
 - [PyBullet](https://pybullet.org)
 
 ### Installation procedure
