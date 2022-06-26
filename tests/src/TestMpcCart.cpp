@@ -20,7 +20,13 @@
 #include <DDMPC/TorchUtils.h>
 #include <DDMPC/Training.h>
 
-/** \brief DDP problem based on data-driven state equation. */
+/** \brief DDP problem based on data-driven state equation.
+
+    State consists of [p, p_dot, theta, theta_dot].
+    Input consists of [fx, fz].
+    p is the cart position. theta is the cart angle.
+    fx and fz are the manipulation force in the X and Z directions.
+ */
 class DDPProblem : public nmpc_ddp::DDPProblem<4, 2>
 {
 public:
