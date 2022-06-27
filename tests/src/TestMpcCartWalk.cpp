@@ -61,7 +61,6 @@ public:
       const WeightParam & weight_param = WeightParam())
   : nmpc_ddp::DDPProblem<8, 4>(dt), state_eq_(state_eq), ref_func_(ref_func), weight_param_(weight_param)
   {
-    _setupRunSimOnce();
   }
 
   RobotStateDimVector simulateRobot(const StateDimVector & x, const InputDimVector & u, double dt) const
@@ -268,14 +267,6 @@ public:
   }
 
 protected:
-  void _setupRunSimOnce() const
-  {
-    // This is a wrapper for google-test's ASSERT_*, which can only be used with void functions
-    // https://google.github.io/googletest/advanced.html#assertion-placement
-    ASSERT_TRUE(ros::service::waitForService("/run_sim_once", ros::Duration(10.0)))
-        << "[TestMpcCart] Failed to wait for ROS service to run simulation once." << std::endl;
-  }
-
   void _callRunSimOnce(data_driven_mpc::RunSimOnce & run_sim_once_srv) const
   {
     // This is a wrapper for google-test's ASSERT_*, which can only be used with void functions
@@ -307,13 +298,15 @@ namespace Eigen
 using MatrixXdRowMajor = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 }
 
-TEST(TestMpcCartWalk, Test1)
+TEST(TestMpcCartWalk, RunMPC)
 {
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
   ros::ServiceClient generate_dataset_cli = nh.serviceClient<data_driven_mpc::GenerateDataset>("/generate_dataset");
   ASSERT_TRUE(generate_dataset_cli.waitForExistence(ros::Duration(10.0)))
       << "[TestMpcCartWalk] Failed to wait for ROS service to generate dataset." << std::endl;
+  ASSERT_TRUE(ros::service::waitForService("/run_sim_once", ros::Duration(10.0)))
+      << "[TestMpcCartWalk] Failed to wait for ROS service to run simulation once." << std::endl;
 
   //// 1. Train state equation ////
   double horizon_dt = 0.1; // [sec]
@@ -557,6 +550,66 @@ TEST(TestMpcCartWalk, Test1)
             << "  plot \"" << file_path << "\" u 1:12 w lp, \"\" u 1:13 w lp # obj_force\n"
             << "  plot \"" << file_path << "\" u 1:26 w lp # ddp_iter\n"
             << "  plot \"" << file_path << "\" u 1:27 w lp # computation_time\n";
+}
+
+TEST(TestMpcCartWalk, CheckDerivatives)
+{
+  constexpr double deriv_eps = 1e-4;
+
+  double horizon_dt = 0.05; // [sec]
+  int middle_layer_dim = 32;
+  auto state_eq = std::make_shared<DDMPC::StateEq>(DDPProblem::ObjStateDim, DDPProblem::ObjInputDim, middle_layer_dim);
+  auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq);
+
+  int dataset_size = 1000;
+  Eigen::MatrixXd state_all = 1.0 * Eigen::MatrixXd::Random(dataset_size, DDPProblem::ObjStateDim);
+  Eigen::MatrixXd input_all = 100.0 * Eigen::MatrixXd::Random(dataset_size, DDPProblem::ObjInputDim);
+  Eigen::MatrixXd next_state_all = 10.0 * Eigen::MatrixXd::Random(dataset_size, DDPProblem::ObjStateDim);
+  auto state_standard_scaler = std::make_shared<DDMPC::StandardScaler<double, DDPProblem::ObjStateDim>>(state_all);
+  auto input_standard_scaler = std::make_shared<DDMPC::StandardScaler<double, DDPProblem::ObjInputDim>>(input_all);
+  auto next_state_standard_scaler =
+      std::make_shared<DDMPC::StandardScaler<double, DDPProblem::ObjStateDim>>(next_state_all);
+  ddp_problem->setStandardScaler(state_standard_scaler, input_standard_scaler, next_state_standard_scaler);
+
+  double t = 0;
+  DDPProblem::StateDimVector x = 1.0 * DDPProblem::StateDimVector::Random();
+  DDPProblem::InputDimVector u = 100.0 * DDPProblem::InputDimVector::Random();
+
+  DDPProblem::StateStateDimMatrix state_eq_deriv_x_analytical;
+  DDPProblem::StateInputDimMatrix state_eq_deriv_u_analytical;
+  ddp_problem->calcStateEqDeriv(t, x, u, state_eq_deriv_x_analytical, state_eq_deriv_u_analytical);
+
+  DDPProblem::StateStateDimMatrix state_eq_deriv_x_numerical;
+  DDPProblem::StateInputDimMatrix state_eq_deriv_u_numerical;
+  for(int i = 0; i < ddp_problem->stateDim(); i++)
+  {
+    state_eq_deriv_x_numerical.col(i) =
+        (ddp_problem->stateEq(t, x + deriv_eps * DDPProblem::StateDimVector::Unit(i), u)
+         - ddp_problem->stateEq(t, x - deriv_eps * DDPProblem::StateDimVector::Unit(i), u))
+        / (2 * deriv_eps);
+  }
+  for(int i = 0; i < ddp_problem->inputDim(); i++)
+  {
+    state_eq_deriv_u_numerical.col(i) =
+        (ddp_problem->stateEq(t, x, u + deriv_eps * DDPProblem::InputDimVector::Unit(i))
+         - ddp_problem->stateEq(t, x, u - deriv_eps * DDPProblem::InputDimVector::Unit(i)))
+        / (2 * deriv_eps);
+  }
+
+  EXPECT_LT((state_eq_deriv_x_analytical - state_eq_deriv_x_numerical).norm(), 1e-2)
+      << "state_eq_deriv_x_analytical:\n"
+      << state_eq_deriv_x_analytical << std::endl
+      << "state_eq_deriv_x_numerical:\n"
+      << state_eq_deriv_x_numerical << std::endl
+      << "state_eq_deriv_x_error:\n"
+      << state_eq_deriv_x_analytical - state_eq_deriv_x_numerical << std::endl;
+  EXPECT_LT((state_eq_deriv_u_analytical - state_eq_deriv_u_numerical).norm(), 1e-2)
+      << "state_eq_deriv_u_analytical:\n"
+      << state_eq_deriv_u_analytical << std::endl
+      << "state_eq_deriv_u_numerical:\n"
+      << state_eq_deriv_u_numerical << std::endl
+      << "state_eq_deriv_u_error:\n"
+      << state_eq_deriv_u_analytical - state_eq_deriv_u_numerical << std::endl;
 }
 
 int main(int argc, char ** argv)
