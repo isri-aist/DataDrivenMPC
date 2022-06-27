@@ -24,7 +24,7 @@
 
     State consists of [robot_com_pos_x, robot_com_vel_x, robot_com_pos_y, robot_com_vel_y, obj_p, obj_p_dot, obj_theta,
    obj_theta_dot]. Input consists of [robot_zmp_x, robot_zmp_y, obj_fx, obj_fz]. obj_p is the cart position. obj_theta
-   is the cart angle. obj_fx and obj_fz are the manipulation force in the X and Z directions.
+   is the cart angle. obj_fx and obj_fz are the manipulation force applied to an object in the X and Z directions.
  */
 class DDPProblem : public nmpc_ddp::DDPProblem<8, 4>
 {
@@ -80,7 +80,7 @@ public:
     double omega2 = gravity_acc_ / robot_com_height_;
     double zeta = robot_mass_ * gravity_acc_;
     double kappa = 1.0 + obj_fz / zeta;
-    double gamma_x = (-grasp_pos_z_ * obj_fx + (obj_p + grasp_pos_x_local_) * obj_fz) / zeta;
+    double gamma_x = (-1 * grasp_pos_z_ * obj_fx + (obj_p + grasp_pos_x_local_) * obj_fz) / zeta;
 
     RobotStateDimVector x_dot;
     x_dot[0] = robot_com_vel_x;
@@ -161,7 +161,7 @@ public:
     double omega2 = gravity_acc_ / robot_com_height_;
     double zeta = robot_mass_ * gravity_acc_;
     double kappa = 1.0 + obj_fz / zeta;
-    double gamma_x = (-grasp_pos_z_ * obj_fx + (obj_p + grasp_pos_x_local_) * obj_fz) / zeta;
+    double gamma_x = (-1 * grasp_pos_z_ * obj_fx + (obj_p + grasp_pos_x_local_) * obj_fz) / zeta;
 
     state_eq_deriv_x.setZero();
     state_eq_deriv_u.setZero();
@@ -333,32 +333,38 @@ TEST(TestMpcCartWalk, Test1)
     ref_x.setZero();
     if(t < 1.0) // [sec]
     {
-      ref_x[4] = 0.2; // [m]
+      ref_x[4] = 0.5; // [m]
     }
     else if(t < 3.0) // [sec]
     {
-      ref_x[4] = 0.3 * (t - 1.0) + 0.2; // [m]
+      ref_x[4] = 0.3 * (t - 1.0) + 0.5; // [m]
     }
     else
     {
-      ref_x[4] = 0.8; // [m]
+      ref_x[4] = 1.1; // [m]
     }
 
     // ZMP position
     ref_u.setZero();
     double step_total_duration = 1.0; // [sec]
     double step_transit_duration = 0.2; // [sec]
+    double zmp_x_step = 0.2; // [m]
+    std::vector<double> zmp_y_list = {0.0, -0.1, 0.1, 0.0}; // [m]
     int step_idx = std::clamp(static_cast<int>(std::floor((t - 1.5) / step_total_duration)), -1, 2);
     if(step_idx == -1)
     {
       ref_u[0] = 0.0; // [m]
+      ref_u[1] = 0.0; // [m]
     }
     else
     {
       double step_start_time = 1.5 + step_idx * step_total_duration;
-      ref_u[0] = 0.2 * (step_idx + std::clamp((t - step_start_time) / step_transit_duration, 0.0, 1.0));
+      double ratio = std::clamp((t - step_start_time) / step_transit_duration, 0.0, 1.0);
+      ref_u[0] = zmp_x_step * (static_cast<double>(step_idx) + ratio);
+      ref_u[1] = (1.0 - ratio) * zmp_y_list[step_idx] + ratio * zmp_y_list[step_idx + 1];
     }
     ref_x[0] = ref_u[0];
+    ref_x[1] = ref_u[1];
   };
   auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq, ref_func);
 
@@ -367,7 +373,8 @@ TEST(TestMpcCartWalk, Test1)
   data_driven_mpc::GenerateDataset generate_dataset_srv;
   std::string dataset_filename = ros::package::getPath("data_driven_mpc") + "/tests/data/TestMpcCartWalkDataset.bag";
   int dataset_size = 10000;
-  DDPProblem::ObjStateDimVector x_max = DDPProblem::ObjStateDimVector(1.0, 0.2, 0.4, 0.5);
+  DDPProblem::ObjStateDimVector x_max = DDPProblem::ObjStateDimVector(2.0, 0.2, 0.4, 0.5);
+  DDPProblem::ObjStateDimVector x_min = DDPProblem::ObjStateDimVector(0.0, -0.2, -0.4, -0.5);
   DDPProblem::ObjInputDimVector u_max = DDPProblem::ObjInputDimVector(15.0, 15.0);
   generate_dataset_srv.request.filename = dataset_filename;
   generate_dataset_srv.request.dataset_size = dataset_size;
@@ -375,7 +382,7 @@ TEST(TestMpcCartWalk, Test1)
   generate_dataset_srv.request.state_max.resize(DDPProblem::ObjStateDim);
   DDPProblem::ObjStateDimVector::Map(&generate_dataset_srv.request.state_max[0], DDPProblem::ObjStateDim) = x_max;
   generate_dataset_srv.request.state_min.resize(DDPProblem::ObjStateDim);
-  DDPProblem::ObjStateDimVector::Map(&generate_dataset_srv.request.state_min[0], DDPProblem::ObjStateDim) = -1 * x_max;
+  DDPProblem::ObjStateDimVector::Map(&generate_dataset_srv.request.state_min[0], DDPProblem::ObjStateDim) = x_min;
   generate_dataset_srv.request.input_max.resize(DDPProblem::ObjInputDim);
   DDPProblem::ObjInputDimVector::Map(&generate_dataset_srv.request.input_max[0], DDPProblem::ObjInputDim) = u_max;
   generate_dataset_srv.request.input_min.resize(DDPProblem::ObjInputDim);
@@ -442,100 +449,114 @@ TEST(TestMpcCartWalk, Test1)
             << "  set key noenhanced\n"
             << "  plot \"/tmp/DataDrivenMPCTraining.txt\" u 1:2 w lp, \"\" u 1:3 w lp\n";
 
-  // //// 2. Run MPC ////
-  // double horizon_duration = 2.0; // [sec]
-  // int horizon_steps = static_cast<int>(horizon_duration / horizon_dt);
-  // double end_t = 3.0; // [sec]
+  //// 2. Run MPC ////
+  double horizon_duration = 2.0; // [sec]
+  int horizon_steps = static_cast<int>(horizon_duration / horizon_dt);
+  double end_t = 5.0; // [sec]
 
-  // // Instantiate solver
-  // auto ddp_solver = std::make_shared<nmpc_ddp::DDPSolver<8, 4>>(ddp_problem);
-  // auto input_limits_func = [&](double t) -> std::array<DDPProblem::InputDimVector, 2> {
-  //   std::array<DDPProblem::InputDimVector, 2> limits;
-  //   limits[0] = -1 * u_max;
-  //   limits[1] = u_max;
-  //   return limits;
-  // };
-  // ddp_solver->setInputLimitsFunc(input_limits_func);
-  // ddp_solver->config().with_input_constraint = true;
-  // ddp_solver->config().horizon_steps = horizon_steps;
-  // ddp_solver->config().max_iter = 5;
+  // Instantiate solver
+  auto ddp_solver = std::make_shared<nmpc_ddp::DDPSolver<8, 4>>(ddp_problem);
+  auto input_limits_func = [&](double t) -> std::array<DDPProblem::InputDimVector, 2> {
+    std::array<DDPProblem::InputDimVector, 2> limits;
+    limits[0] << Eigen::Vector2d::Constant(-1e10), -1 * u_max;
+    limits[1] << Eigen::Vector2d::Constant(1e10), u_max;
+    return limits;
+  };
+  ddp_solver->setInputLimitsFunc(input_limits_func);
+  ddp_solver->config().with_input_constraint = true;
+  ddp_solver->config().horizon_steps = horizon_steps;
+  ddp_solver->config().max_iter = 5;
 
-  // // Initialize MPC
-  // double sim_dt = 0.05; // [sec]
-  // double current_t = 0;
-  // DDPProblem::StateDimVector current_x = DDPProblem::StateDimVector(-0.2, 0.0, 0.2, 0.0);
-  // std::vector<DDPProblem::InputDimVector> current_u_list(horizon_steps, DDPProblem::InputDimVector::Zero());
+  // Initialize MPC
+  double sim_dt = 0.05; // [sec]
+  double current_t = 0;
+  DDPProblem::StateDimVector current_x;
+  current_x << 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0;
+  std::vector<DDPProblem::InputDimVector> current_u_list(horizon_steps, DDPProblem::InputDimVector::Zero());
 
-  // // Run MPC loop
-  // bool first_iter = true;
-  // std::string file_path = "/tmp/TestMpcCartWalkResult.txt";
-  // std::ofstream ofs(file_path);
-  // ofs << "time p p_dot theta theta_dot fx fz ddp_iter computation_time" << std::endl;
-  // bool no_exit = false;
-  // pnh.getParam("no_exit", no_exit);
-  // while(no_exit || current_t < end_t)
-  // {
-  //   // Solve
-  //   auto start_time = std::chrono::system_clock::now();
-  //   ddp_solver->solve(current_t, current_x, current_u_list);
-  //   if(first_iter)
-  //   {
-  //     first_iter = false;
-  //   }
+  // Run MPC loop
+  std::string file_path = "/tmp/TestMpcCartWalkResult.txt";
+  std::ofstream ofs(file_path);
+  ofs << "time robot_com_pos_x robot_com_vel_x robot_com_pos_y robot_com_vel_y obj_p obj_p_dot obj_theta obj_theta_dot "
+         "robot_zmp_x robot_zmp_y obj_fx obj_fz ref_robot_com_pos_x ref_robot_com_vel_x ref_robot_com_pos_y "
+         "ref_robot_com_vel_y ref_obj_p ref_obj_p_dot ref_obj_theta ref_obj_theta_dot ref_robot_zmp_x ref_robot_zmp_y "
+         "ref_obj_fx ref_obj_fz ddp_iter computation_time"
+      << std::endl;
+  bool no_exit = false;
+  pnh.getParam("no_exit", no_exit);
+  while(no_exit || current_t < end_t)
+  {
+    // Solve
+    auto start_time = std::chrono::system_clock::now();
+    ddp_solver->solve(current_t, current_x, current_u_list);
 
-  //   // Set input
-  //   const auto & input_limits = input_limits_func(current_t);
-  //   DDPProblem::InputDimVector current_u =
-  //       ddp_solver->controlData().u_list[0].cwiseMax(input_limits[0]).cwiseMin(input_limits[1]);
-  //   double duration =
-  //       1e3
-  //       * std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now() - start_time)
-  //             .count();
+    // Set input
+    const auto & input_limits = input_limits_func(current_t);
+    DDPProblem::InputDimVector current_u =
+        ddp_solver->controlData().u_list[0].cwiseMax(input_limits[0]).cwiseMin(input_limits[1]);
+    double duration =
+        1e3
+        * std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now() - start_time)
+              .count();
 
-  //   // Check
-  //   for(int i = 0; i < DDPProblem::ObjStateDim; i++)
-  //   {
-  //     EXPECT_LE(std::abs(current_x[i]), 5 * x_max[i])
-  //         << "[TestMpcCartWalk] Violate x[" << i << "] limits." << std::endl;
-  //   }
-  //   for(int i = 0; i < DDPProblem::ObjInputDim; i++)
-  //   {
-  //     EXPECT_LE(std::abs(current_u[i]), 5 * u_max[i])
-  //         << "[TestMpcCartWalk] Violate u[" << i << "] limits." << std::endl;
-  //   }
+    // Check
+    DDPProblem::StateDimVector current_ref_x;
+    DDPProblem::InputDimVector current_ref_u;
+    ref_func(current_t, current_ref_x, current_ref_u);
+    for(int i = 0; i < current_x.size(); i++)
+    {
+      EXPECT_LT(std::abs(current_x[i] - current_ref_x[i]), 10.0)
+          << "[TestMpcCartWalk] Violate x[" << i << "]." << std::endl;
+    }
+    for(int i = 0; i < current_u.size(); i++)
+    {
+      EXPECT_LT(std::abs(current_u[i] - current_ref_u[i]), 100.0)
+          << "[TestMpcCartWalk] Violate u[" << i << "]." << std::endl;
+    }
+    EXPECT_LE(std::abs(current_u[2]), u_max[0]); // [N]
+    EXPECT_LE(std::abs(current_u[3]), u_max[1]); // [N]
 
-  //   // Dump
-  //   ofs << current_t << " " << current_x.transpose() << " " << current_u.transpose() << " "
-  //       << ddp_solver->traceDataList().back().iter << " " << duration << std::endl;
+    // Dump
+    ofs << current_t << " " << current_x.transpose() << " " << current_u.transpose() << " " << current_ref_x.transpose()
+        << " " << current_ref_u.transpose() << " " << ddp_solver->traceDataList().back().iter << " " << duration
+        << std::endl;
 
-  //   // Update to next step
-  //   current_t += sim_dt;
-  //   data_driven_mpc::RunSimOnce run_sim_once_srv;
-  //   run_sim_once_srv.request.dt = sim_dt;
-  //   run_sim_once_srv.request.state.resize(DDPProblem::ObjStateDim);
-  //   DDPProblem::StateDimVector::Map(&run_sim_once_srv.request.state[0], DDPProblem::ObjStateDim) = current_x;
-  //   run_sim_once_srv.request.input.resize(DDPProblem::ObjInputDim);
-  //   DDPProblem::InputDimVector::Map(&run_sim_once_srv.request.input[0], DDPProblem::ObjInputDim) = current_u;
-  //   ASSERT_TRUE(run_sim_once_cli.call(run_sim_once_srv))
-  //       << "[TestMpcCartWalk] Failed to call ROS service to run simulation once." << std::endl;
-  //   current_x = DDPProblem::StateDimVector::Map(&run_sim_once_srv.response.state[0], DDPProblem::ObjStateDim);
-  //   current_u_list = ddp_solver->controlData().u_list;
-  // }
+    // Update to next step
+    current_t += sim_dt;
+    current_x = ddp_problem->simulate(current_x, current_u, sim_dt);
+    current_u_list = ddp_solver->controlData().u_list;
+  }
 
-  // // Final check
-  // const DDPProblem::InputDimVector & current_u = ddp_solver->controlData().u_list[0];
-  // EXPECT_LT(std::abs(current_x[0]), 0.15);
-  // EXPECT_LT(std::abs(current_x[1]), 0.5);
-  // EXPECT_LT(std::abs(current_x[2]), 0.15);
-  // EXPECT_LT(std::abs(current_x[3]), 0.5);
-  // EXPECT_LT(std::abs(current_u[0]), 10.0);
-  // EXPECT_LT(std::abs(current_u[1]), 15.0);
+  // Final check
+  const DDPProblem::InputDimVector & current_u = ddp_solver->controlData().u_list[0];
+  DDPProblem::StateDimVector current_ref_x;
+  DDPProblem::InputDimVector current_ref_u;
+  ref_func(current_t, current_ref_x, current_ref_u);
+  DDPProblem::StateDimVector x_tolerance;
+  x_tolerance << 0.2, 0.1, 0.2, 0.1, 0.5, 0.1, 0.2, 0.1;
+  DDPProblem::InputDimVector u_tolerance;
+  u_tolerance << 0.2, 0.2, 10.0, 10.0;
+  for(int i = 0; i < current_x.size(); i++)
+  {
+    EXPECT_LT(std::abs(current_x[i] - current_ref_x[i]), x_tolerance[i])
+        << "[TestMpcCartWalk] Violate x[" << i << "]." << std::endl;
+  }
+  for(int i = 0; i < current_u.size(); i++)
+  {
+    EXPECT_LT(std::abs(current_u[i] - current_ref_u[i]), u_tolerance[i])
+        << "[TestMpcCartWalk] Violate u[" << i << "]." << std::endl;
+  }
 
-  // std::cout << "Run the following commands in gnuplot:\n"
-  //           << "  set key autotitle columnhead\n"
-  //           << "  set key noenhanced\n"
-  //           << "  plot \"" << file_path << "\" u 1:2 w lp, \"\" u 1:4 w lp # state\n"
-  //           << "  plot \"" << file_path << "\" u 1:6 w lp, \"\" u 1:7 w lp # input\n";
+  std::cout << "Run the following commands in gnuplot:\n"
+            << "  set key autotitle columnhead\n"
+            << "  set key noenhanced\n"
+            << "  plot \"" << file_path
+            << "\" u 1:2 w lp, \"\" u 1:6 w lp, \"\" u 1:10 w lp, \"\" u 1:18 w l lw 2, \"\" u 1:22 w l lw 2 # pos_x\n"
+            << "  plot \"" << file_path << "\" u 1:4 w lp, \"\" u 1:11 w lp, \"\" u 1:23 w l lw 2 # pos_y\n"
+            << "  plot \"" << file_path << "\" u 1:8 w lp # obj_theta\n"
+            << "  plot \"" << file_path << "\" u 1:12 w lp, \"\" u 1:13 w lp # obj_force\n"
+            << "  plot \"" << file_path << "\" u 1:26 w lp # ddp_iter\n"
+            << "  plot \"" << file_path << "\" u 1:27 w lp # computation_time\n";
 }
 
 int main(int argc, char ** argv)

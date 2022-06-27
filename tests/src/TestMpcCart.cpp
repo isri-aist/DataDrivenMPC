@@ -290,7 +290,6 @@ TEST(TestMpcCart, Test1)
   std::vector<DDPProblem::InputDimVector> current_u_list(horizon_steps, DDPProblem::InputDimVector::Zero());
 
   // Run MPC loop
-  bool first_iter = true;
   std::string file_path = "/tmp/TestMpcCartResult.txt";
   std::ofstream ofs(file_path);
   ofs << "time p p_dot theta theta_dot fx fz ddp_iter computation_time" << std::endl;
@@ -301,10 +300,6 @@ TEST(TestMpcCart, Test1)
     // Solve
     auto start_time = std::chrono::system_clock::now();
     ddp_solver->solve(current_t, current_x, current_u_list);
-    if(first_iter)
-    {
-      first_iter = false;
-    }
 
     // Set input
     const auto & input_limits = input_limits_func(current_t);
@@ -318,11 +313,11 @@ TEST(TestMpcCart, Test1)
     // Check
     for(int i = 0; i < state_dim; i++)
     {
-      EXPECT_LE(std::abs(current_x[i]), 5 * x_max[i]) << "[TestMpcCart] Violate x[" << i << "] limits." << std::endl;
+      EXPECT_LT(std::abs(current_x[i]), 5 * x_max[i]) << "[TestMpcCart] Violate x[" << i << "] limits." << std::endl;
     }
     for(int i = 0; i < input_dim; i++)
     {
-      EXPECT_LE(std::abs(current_u[i]), 5 * u_max[i]) << "[TestMpcCart] Violate u[" << i << "] limits." << std::endl;
+      EXPECT_LE(std::abs(current_u[i]), u_max[i]) << "[TestMpcCart] Violate u[" << i << "] limits." << std::endl;
     }
 
     // Dump
