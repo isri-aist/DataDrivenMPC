@@ -49,7 +49,7 @@ public:
     {
       running_state << 0.0, 1e-4, 0.0, 1e-4, 1e2, 1e-4, 1e2, 1e-4;
       running_input << 1.0, 1.0, 1e-2, 1e-2;
-      terminal_state << 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0;
+      terminal_state << 1.0, 1.0, 1.0, 1.0, 1e2, 1.0, 1.0, 1.0;
     }
   };
 
@@ -319,7 +319,7 @@ TEST(TestMpcCartWalk, Test1)
   double horizon_dt = 0.1; // [sec]
 
   // Instantiate state equation
-  int middle_layer_dim = 64;
+  int middle_layer_dim = 32;
   auto state_eq = std::make_shared<DDMPC::StateEq>(DDPProblem::ObjStateDim, DDPProblem::ObjInputDim, middle_layer_dim);
 
   // Instantiate problem

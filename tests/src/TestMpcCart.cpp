@@ -182,7 +182,7 @@ TEST(TestMpcCart, Test1)
   // Instantiate state equation
   int state_dim = 4;
   int input_dim = 2;
-  int middle_layer_dim = 64;
+  int middle_layer_dim = 32;
   auto state_eq = std::make_shared<DDMPC::StateEq>(state_dim, input_dim, middle_layer_dim);
 
   // Instantiate problem
