@@ -8,6 +8,7 @@ set(DDMPC_gtest_list
   TestTraining
   TestMpcOscillator
   TestMpcPushWalk
+  TestMpcCartWalk
   )
 
 set(DDMPC_rostest_list
