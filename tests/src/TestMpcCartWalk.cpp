@@ -48,7 +48,7 @@ public:
     WeightParam()
     {
       running_state << 0.0, 1e-4, 0.0, 1e-4, 1e3, 1e-4, 1e2, 1e-4;
-      running_input << 1e1, 1e1, 1e-2, 1e-2;
+      running_input << 1e1, 1e1, 1e-1, 1e-1;
       terminal_state << 1.0, 1.0, 1.0, 1.0, 1e2, 1.0, 1.0, 1.0;
     }
   };
@@ -312,7 +312,7 @@ TEST(TestMpcCartWalk, RunMPC)
   double horizon_dt = 0.1; // [sec]
 
   // Instantiate state equation
-  int middle_layer_dim = 64;
+  int middle_layer_dim = 32;
   auto state_eq = std::make_shared<DDMPC::StateEq>(DDPProblem::ObjStateDim, DDPProblem::ObjInputDim, middle_layer_dim);
 
   // Instantiate problem
@@ -427,7 +427,7 @@ TEST(TestMpcCartWalk, RunMPC)
   DDMPC::Training training;
   std::string model_path = ros::package::getPath("data_driven_mpc") + "/tests/data/TestMpcCartWalkModel.pt";
   int batch_size = 256;
-  int num_epoch = 250;
+  int num_epoch = 400;
   double learning_rate = 1e-3;
   training.run(state_eq, train_dataset, test_dataset, model_path, batch_size, num_epoch, learning_rate);
   training.load(state_eq, model_path);
