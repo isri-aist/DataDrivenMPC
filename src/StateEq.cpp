@@ -18,8 +18,8 @@ StateEq::Model::Model(int state_dim, int input_dim, int middle_layer_dim) : stat
     std::cout << "Construct NN Module" << std::endl;
     std::cout << "  - state_dim: " << state_dim_ << std::endl;
     std::cout << "  - input_dim: " << input_dim_ << std::endl;
-    std::cout << "  - layer dims: " << state_dim_ + input_dim_ << " -> " << middle_layer_dim << " -> " << state_dim_
-              << std::endl;
+    std::cout << "  - layer dims: " << state_dim_ + input_dim_ << " -> " << middle_layer_dim << " -> "
+              << middle_layer_dim << " -> " << state_dim_ << std::endl;
   }
 
   // Workaround to avoid torch error
