@@ -47,8 +47,8 @@ public:
 
     WeightParam()
     {
-      running_state << 0.0, 1e-4, 0.0, 1e-4, 1e2, 1e-4, 1e2, 1e-4;
-      running_input << 1.0, 1.0, 1e-2, 1e-2;
+      running_state << 0.0, 1e-4, 0.0, 1e-4, 1e3, 1e-4, 1e2, 1e-4;
+      running_input << 1e1, 1e1, 1e-2, 1e-2;
       terminal_state << 1.0, 1.0, 1.0, 1.0, 1e2, 1.0, 1.0, 1.0;
     }
   };
@@ -375,7 +375,7 @@ TEST(TestMpcCartWalk, Test1)
   int dataset_size = 10000;
   DDPProblem::ObjStateDimVector x_max = DDPProblem::ObjStateDimVector(2.0, 0.2, 0.4, 0.5);
   DDPProblem::ObjStateDimVector x_min = DDPProblem::ObjStateDimVector(0.0, -0.2, -0.4, -0.5);
-  DDPProblem::ObjInputDimVector u_max = DDPProblem::ObjInputDimVector(15.0, 15.0);
+  DDPProblem::ObjInputDimVector u_max = DDPProblem::ObjInputDimVector(20.0, 15.0);
   generate_dataset_srv.request.filename = dataset_filename;
   generate_dataset_srv.request.dataset_size = dataset_size;
   generate_dataset_srv.request.dt = horizon_dt;

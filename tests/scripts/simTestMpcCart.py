@@ -43,7 +43,7 @@ class SimTestMpcCart(object):
         cylinder_col_shape_idx = pybullet.createCollisionShape(pybullet.GEOM_CYLINDER,
                                                                radius=self.cylinder_radius,
                                                                height=cylinder_height)
-        box_mass = 8.0 # [kg]
+        box_mass = rospy.get_param("~box_mass", 8.0) # [kg]
         self.box_com_offset = np.array([-0.02, 0.0, -0.1]) # [m]
         cylinder_mass = 2.0 # [kg]
         self.cart_body_uid = pybullet.createMultiBody(baseMass=box_mass,
@@ -71,7 +71,9 @@ class SimTestMpcCart(object):
                                    rgbaColor=[0.1, 0.1, 0.1, 0.8])
 
         # Set dynamics parameters
-        pybullet.changeDynamics(bodyUniqueId=self.cart_body_uid, linkIndex=0, lateralFriction=0.05)
+        pybullet.changeDynamics(bodyUniqueId=self.cart_body_uid,
+                                linkIndex=0,
+                                lateralFriction=rospy.get_param("~lateral_friction", 0.05))
 
         # Setup variables
         self.force_line_uid = -1

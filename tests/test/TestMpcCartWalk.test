@@ -13,6 +13,8 @@
   <node pkg="data_driven_mpc" type="simTestMpcCart.py" name="sim_test_mpc_cart_walk">
     <rosparam subst_value="true">
       enable_gui: $(arg enable_gui)
+      box_mass: 20.0
+      lateral_friction: 0.1
     </rosparam>
   </node>
 </launch>
