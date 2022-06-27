@@ -1,0 +1,18 @@
+<launch>
+  <arg name="no_exit" default="false" />
+  <arg name="enable_gui" default="false" />
+
+  <test test-name="test_mpc_cart_walk"
+        pkg="data_driven_mpc" type="TestMpcCartWalk" name="test_mpc_cart_walk"
+        time-limit="1800.0">
+    <rosparam subst_value="true">
+      no_exit: $(arg no_exit)
+    </rosparam>
+  </test>
+
+  <node pkg="data_driven_mpc" type="simTestMpcCart.py" name="sim_test_mpc_cart_walk">
+    <rosparam subst_value="true">
+      enable_gui: $(arg enable_gui)
+    </rosparam>
+  </node>
+</launch>

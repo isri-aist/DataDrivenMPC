@@ -506,12 +506,12 @@ TEST(TestMpcCartWalk, Test1)
     for(int i = 0; i < current_x.size(); i++)
     {
       EXPECT_LT(std::abs(current_x[i] - current_ref_x[i]), 10.0)
-          << "[TestMpcCartWalk] Violate x[" << i << "]." << std::endl;
+          << "[TestMpcCartWalk] Violate running check for x[" << i << "]." << std::endl;
     }
     for(int i = 0; i < current_u.size(); i++)
     {
       EXPECT_LT(std::abs(current_u[i] - current_ref_u[i]), 100.0)
-          << "[TestMpcCartWalk] Violate u[" << i << "]." << std::endl;
+          << "[TestMpcCartWalk] Violate running check for u[" << i << "]." << std::endl;
     }
     EXPECT_LE(std::abs(current_u[2]), u_max[0]); // [N]
     EXPECT_LE(std::abs(current_u[3]), u_max[1]); // [N]
@@ -533,18 +533,18 @@ TEST(TestMpcCartWalk, Test1)
   DDPProblem::InputDimVector current_ref_u;
   ref_func(current_t, current_ref_x, current_ref_u);
   DDPProblem::StateDimVector x_tolerance;
-  x_tolerance << 0.2, 0.1, 0.2, 0.1, 0.5, 0.1, 0.2, 0.1;
+  x_tolerance << 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5;
   DDPProblem::InputDimVector u_tolerance;
-  u_tolerance << 0.2, 0.2, 10.0, 10.0;
+  u_tolerance << 0.5, 0.5, 10.0, 10.0;
   for(int i = 0; i < current_x.size(); i++)
   {
     EXPECT_LT(std::abs(current_x[i] - current_ref_x[i]), x_tolerance[i])
-        << "[TestMpcCartWalk] Violate x[" << i << "]." << std::endl;
+        << "[TestMpcCartWalk] Violate final check for x[" << i << "]." << std::endl;
   }
   for(int i = 0; i < current_u.size(); i++)
   {
     EXPECT_LT(std::abs(current_u[i] - current_ref_u[i]), u_tolerance[i])
-        << "[TestMpcCartWalk] Violate u[" << i << "]." << std::endl;
+        << "[TestMpcCartWalk] Violate final check for u[" << i << "]." << std::endl;
   }
 
   std::cout << "Run the following commands in gnuplot:\n"

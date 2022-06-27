@@ -8,11 +8,11 @@ set(DDMPC_gtest_list
   TestTraining
   TestMpcOscillator
   TestMpcPushWalk
-  TestMpcCartWalk
   )
 
 set(DDMPC_rostest_list
   TestMpcCart
+  TestMpcCartWalk
   )
 
 foreach(NAME IN LISTS DDMPC_gtest_list)
