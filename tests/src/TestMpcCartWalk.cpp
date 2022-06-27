@@ -312,7 +312,7 @@ TEST(TestMpcCartWalk, RunMPC)
   double horizon_dt = 0.1; // [sec]
 
   // Instantiate state equation
-  int middle_layer_dim = 32;
+  int middle_layer_dim = 64;
   auto state_eq = std::make_shared<DDMPC::StateEq>(DDPProblem::ObjStateDim, DDPProblem::ObjInputDim, middle_layer_dim);
 
   // Instantiate problem
@@ -368,7 +368,7 @@ TEST(TestMpcCartWalk, RunMPC)
   int dataset_size = 10000;
   DDPProblem::ObjStateDimVector x_max = DDPProblem::ObjStateDimVector(2.0, 0.2, 0.4, 0.5);
   DDPProblem::ObjStateDimVector x_min = DDPProblem::ObjStateDimVector(0.0, -0.2, -0.4, -0.5);
-  DDPProblem::ObjInputDimVector u_max = DDPProblem::ObjInputDimVector(20.0, 15.0);
+  DDPProblem::ObjInputDimVector u_max = DDPProblem::ObjInputDimVector(15.0, 15.0);
   generate_dataset_srv.request.filename = dataset_filename;
   generate_dataset_srv.request.dataset_size = dataset_size;
   generate_dataset_srv.request.dt = horizon_dt;
