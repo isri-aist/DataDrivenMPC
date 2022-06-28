@@ -61,11 +61,18 @@ $ rosrun data_driven_mpc TestMpcPushWalk --gtest_filter=*.RunMPC
 $ rosrun data_driven_mpc plotTestMpcPushWalk.py
 ```
 
-### [MPC for walking with pushing](tests/src/TestMpcCart.cpp)
+### [MPC for cart pushing](tests/src/TestMpcCart.cpp)
 Control the position and angle of the one wheel cart on the PyBullet dynamics simulator.
 ```bash
 # 3-second simulation
 $ rostest data_driven_mpc TestMpcCart.test enable_gui:=true --text
 # Endless simulation
 $ rostest data_driven_mpc TestMpcCart.test no_exit:=true enable_gui:=true --text
+```
+
+### [MPC for walking with cart pushing](tests/src/TestMpcCartWalk.cpp)
+Control the robot CoM and the position and angle of the one wheel cart on the PyBullet dynamics simulator.
+The robot CoM-ZMP model is known. The object dynamics model is learned.
+```bash
+$ rostest data_driven_mpc TestMpcCartWalk.test enable_gui:=true --text
 ```
