@@ -35,7 +35,7 @@ TEST(TestTraining, Test1)
 
   // Check error
   EXPECT_LT(after_error, before_error);
-  EXPECT_LT(after_error, 0.1);
+  EXPECT_LT(after_error, 0.2);
 
   std::cout << "Run the following commands in gnuplot:\n"
             << "  set key autotitle columnhead\n"
