@@ -8,7 +8,7 @@ Model predictive control based on data-driven model
 
 ### Requirements
 - Compiler supporting C++17
-- Tested with Ubuntu 18.04 / ROS Melodic
+- Tested on `Ubuntu 20.04 / ROS Noetic` and `Ubuntu 18.04 / ROS Melodic`
 
 ### Dependencies
 This package depends on
