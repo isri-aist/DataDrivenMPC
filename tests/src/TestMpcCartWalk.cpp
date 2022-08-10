@@ -389,7 +389,7 @@ TEST(TestMpcCartWalk, RunMPC)
   Eigen::MatrixXd next_state_all;
   rosbag::Bag dataset_bag;
   dataset_bag.open(dataset_filename, rosbag::bagmode::Read);
-  for(rosbag::MessageInstance const msg : rosbag::View(dataset_bag, rosbag::TopicQuery({"/dataset"})))
+  for(rosbag::MessageInstance const msg : rosbag::View(dataset_bag, rosbag::TopicQuery(std::vector<std::string>{"/dataset"})))
   {
     data_driven_mpc::Dataset::ConstPtr dataset_msg = msg.instantiate<data_driven_mpc::Dataset>();
     state_all =
