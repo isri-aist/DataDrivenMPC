@@ -383,7 +383,7 @@ TEST(TestMpcPushWalk, RunMPC)
             << "  plot \"/tmp/DataDrivenMPCTraining.txt\" u 1:2 w lp, \"\" u 1:3 w lp\n";
 
   //// 2. Run MPC ////
-  double horizon_duration = 3.0; // [sec]
+  double horizon_duration = 2.0; // [sec]
   int horizon_steps = static_cast<int>(horizon_duration / horizon_dt);
   double end_t = 5.0; // [sec]
 
@@ -398,6 +398,7 @@ TEST(TestMpcPushWalk, RunMPC)
   ddp_solver->setInputLimitsFunc(input_limits_func);
   ddp_solver->config().with_input_constraint = true;
   ddp_solver->config().horizon_steps = horizon_steps;
+  ddp_solver->config().max_iter = 2;
 
   // Initialize MPC
   double sim_dt = 0.05; // [sec]
@@ -406,7 +407,6 @@ TEST(TestMpcPushWalk, RunMPC)
   std::vector<DDPProblem::InputDimVector> current_u_list(horizon_steps, DDPProblem::InputDimVector::Zero());
 
   // Run MPC loop
-  bool first_iter = true;
   std::string file_path = "/tmp/TestMpcPushWalkResult-" + damper_type_str + ".txt";
   std::ofstream ofs(file_path);
   ofs << "time robot_com_pos robot_com_vel obj_com_pos obj_com_vel robot_zmp obj_force ref_obj_com_pos ref_robot_zmp "
@@ -417,11 +417,6 @@ TEST(TestMpcPushWalk, RunMPC)
     // Solve
     auto start_time = std::chrono::system_clock::now();
     ddp_solver->solve(current_t, current_x, current_u_list);
-    if(first_iter)
-    {
-      first_iter = false;
-      ddp_solver->config().max_iter = 5;
-    }
 
     // Set input
     const auto & input_limits = input_limits_func(current_t);
