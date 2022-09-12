@@ -23,6 +23,7 @@ find_package(Torch REQUIRED)
 add_message_files(
   FILES
   Dataset.msg
+  StandardScaler.msg
   )
 
 add_service_files(

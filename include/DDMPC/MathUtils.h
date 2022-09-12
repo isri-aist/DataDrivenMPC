@@ -4,9 +4,11 @@
 
 #include <Eigen/Dense>
 
+#include <data_driven_mpc/StandardScaler.h>
+
 namespace DDMPC
 {
-/*! \brief Class of standardization (i.e., mean removal and variance scaling).
+/** \brief Class of standardization (i.e., mean removal and variance scaling).
     \tparam Scalar scalar type
     \tparam DataDim data dimension
  */
@@ -24,7 +26,7 @@ public:
   using RowVector = Eigen::Matrix<Scalar, 1, DataDim>;
 
 public:
-  /*! \brief Constructor.
+  /** \brief Constructor.
       \param data_all all data to calculate standardization coefficients
   */
   StandardScaler(const Matrix & data_all)
@@ -33,7 +35,27 @@ public:
     stddev_vec_ = calcStddev(data_all, mean_vec_).cwiseMax(1e-6); // Set minimum to avoid zero devision
   }
 
-  /*! \brief Apply standardization.
+  /** \brief Constructor.
+      \param msg ROS message
+  */
+  StandardScaler(const data_driven_mpc::StandardScaler & msg)
+  {
+    mean_vec_ = RowVector(msg.mean_vec.data());
+    stddev_vec_ = RowVector(msg.stddev_vec.data());
+  }
+
+  /** \brief Convert to ROS message. */
+  data_driven_mpc::StandardScaler toMsg() const
+  {
+    data_driven_mpc::StandardScaler msg;
+    msg.mean_vec.resize(DataDim);
+    RowVector::Map(&msg.mean_vec[0]) = mean_vec_;
+    msg.stddev_vec.resize(DataDim);
+    RowVector::Map(&msg.stddev_vec[0]) = stddev_vec_;
+    return msg;
+  }
+
+  /** \brief Apply standardization.
       \param data data to apply standardization
    */
   Matrix apply(const Matrix & data) const
@@ -41,7 +63,7 @@ public:
     return (data.rowwise() - mean_vec_).array().rowwise() / stddev_vec_.array();
   }
 
-  /*! \brief Apply standardization.
+  /** \brief Apply standardization.
       \param data single data to apply standardization
    */
   Vector applyOne(const Vector & data) const
@@ -49,7 +71,7 @@ public:
     return (data - mean_vec_.transpose()).array() / stddev_vec_.transpose().array();
   }
 
-  /*! \brief Apply inverse standardization.
+  /** \brief Apply inverse standardization.
       \param data data to apply inverse standardization
    */
   Matrix applyInv(const Matrix & data) const
@@ -57,7 +79,7 @@ public:
     return (data.array().rowwise() * stddev_vec_.array()).matrix().rowwise() + mean_vec_;
   }
 
-  /*! \brief Apply inverse standardization.
+  /** \brief Apply inverse standardization.
       \param data single data to apply inverse standardization
    */
   Vector applyOneInv(const Vector & data) const
@@ -65,13 +87,13 @@ public:
     return data.cwiseProduct(stddev_vec_.transpose()) + mean_vec_.transpose();
   }
 
-  /*! \brief Calculate mean. */
+  /** \brief Calculate mean. */
   static RowVector calcMean(const Matrix & data_all)
   {
     return data_all.colwise().mean();
   }
 
-  /*! \brief Calculate standard deviation. */
+  /** \brief Calculate standard deviation. */
   static RowVector calcStddev(const Matrix & data_all, const RowVector & mean)
   {
     return ((data_all.rowwise() - mean).cwiseAbs2().colwise().sum() / (data_all.rows() - 1)).cwiseSqrt();
