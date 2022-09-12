@@ -7,22 +7,22 @@
 
 namespace DDMPC
 {
-/*! \brief Class of state equation based on neural network model. */
+/** \brief Class of state equation based on neural network model. */
 class StateEq
 {
 public:
-  /*! \brief Class of neural network model for state equation. */
+  /** \brief Class of neural network model for state equation. */
   class Model : public torch::nn::Module
   {
   public:
-    /*! \brief Constructor.
+    /** \brief Constructor.
         \param state_dim state dimension
         \param input_dim input dimension
         \param middle_layer_dim middle layer dimension
      */
     Model(int state_dim, int input_dim, int middle_layer_dim);
 
-    /*! \brief Forward model.
+    /** \brief Forward model.
         \param x current state
         \param u current input
         \param enable_auto_grad whether to enable automatic gradient (default true)
@@ -30,7 +30,7 @@ public:
      */
     torch::Tensor forward(torch::Tensor & x, torch::Tensor & u, bool enable_auto_grad = true);
 
-    /*! \brief Forward model.
+    /** \brief Forward model.
         \param x current state
         \param u current input
         \param[out] grad_x gradient w.r.t. x (not calculated when the tensor size is zero)
@@ -60,14 +60,14 @@ public:
     torch::nn::Linear linear3_ = nullptr;
   };
 
-  /*! \brief Model pointer.
+  /** \brief Model pointer.
 
       See "Module Ownership" section of https://pytorch.org/tutorials/advanced/cpp_frontend.html for details
    */
   TORCH_MODULE_IMPL(ModelPtr, Model);
 
 public:
-  /*! \brief Constructor.
+  /** \brief Constructor.
       \param state_dim state dimension
       \param input_dim input dimension
       \param middle_layer_dim middle layer dimension
@@ -77,14 +77,14 @@ public:
   {
   }
 
-  /*! \brief Calculate next state.
+  /** \brief Calculate next state.
       \param x current state
       \param u current input
       \returns next state
    */
   Eigen::VectorXd eval(const Eigen::VectorXd & x, const Eigen::VectorXd & u);
 
-  /*! \brief Calculate next state.
+  /** \brief Calculate next state.
       \param x current state
       \param u current input
       \param[out] grad_x gradient w.r.t. x (not calculated when the matrix size is zero)
@@ -96,13 +96,13 @@ public:
                        Eigen::Ref<Eigen::MatrixXd> grad_x,
                        Eigen::Ref<Eigen::MatrixXd> grad_u);
 
-  /*! \brief Get state dimension. */
+  /** \brief Get state dimension. */
   inline int stateDim() const
   {
     return model_ptr_->state_dim_;
   }
 
-  /*! \brief Get input dimension. */
+  /** \brief Get input dimension. */
   inline int inputDim() const
   {
     return model_ptr_->input_dim_;

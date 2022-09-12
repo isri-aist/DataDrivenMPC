@@ -8,11 +8,11 @@
 
 namespace DDMPC
 {
-/*! \brief Class of single data for state equation. */
+/** \brief Class of single data for state equation. */
 class Data
 {
 public:
-  /*! \brief Constructor.
+  /** \brief Constructor.
       \param state single data tensor of current state
       \param input single data tensor of current input
       \param next_state single data tensor of next state
@@ -33,14 +33,14 @@ public:
   torch::Tensor next_state_;
 };
 
-/*! \brief Single data example of state equation. */
+/** \brief Single data example of state equation. */
 using Example = torch::data::Example<Data, torch::data::example::NoTarget>;
 
-/*! \brief Class of dataset for state equation. */
+/** \brief Class of dataset for state equation. */
 class Dataset : public torch::data::datasets::Dataset<Dataset, Example>
 {
 public:
-  /*! \brief Constructor.
+  /** \brief Constructor.
       \param state all data tensor of current state
       \param input all data tensor of current input
       \param next_state all data tensor of next state
@@ -52,13 +52,13 @@ public:
     size_ = state_.size(0);
   }
 
-  /*! \brief Returns a single data example. */
+  /** \brief Returns a single data example. */
   inline Example get(size_t index) override
   {
     return Data(state_[index], input_[index], next_state_[index]);
   }
 
-  /*! \brief Returns dataset size. */
+  /** \brief Returns dataset size. */
   inline torch::optional<size_t> size() const override
   {
     return size_;
@@ -78,7 +78,7 @@ protected:
   size_t size_;
 };
 
-/*! \brief Make dataset.
+/** \brief Make dataset.
     \param state all data tensor of current state
     \param input all data tensor of current input
     \param next_state all data tensor of next state
@@ -91,7 +91,7 @@ void makeDataset(const torch::Tensor & state,
                  std::shared_ptr<Dataset> & train_dataset,
                  std::shared_ptr<Dataset> & test_dataset);
 
-/*! \brief Make batch tensors.
+/** \brief Make batch tensors.
     \param batch batch from data loader
     \param device device to which tensors belong
     \param[out] b_state batch tensor of current state

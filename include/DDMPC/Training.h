@@ -7,16 +7,16 @@
 
 namespace DDMPC
 {
-/*! \brief Class to train a model. */
+/** \brief Class to train a model. */
 class Training
 {
 public:
-  /*! \brief Constructor.
+  /** \brief Constructor.
       \param device_type type of device (torch::DeviceType::CUDA or torch::DeviceType::CPU)
    */
   Training(torch::DeviceType device_type = torch::DeviceType::CPU);
 
-  /*! \brief Train a model.
+  /** \brief Train a model.
       \param state_eq state equation
       \param train_dataset training dataset
       \param test_dataset test dataset
@@ -33,7 +33,7 @@ public:
            int num_epoch = 100,
            double learning_rate = 1e-3) const;
 
-  /*! \brief Load a model from file.
+  /** \brief Load a model from file.
       \param state_eq state equation
       \param model_path path to load model parameters
    */
