@@ -327,9 +327,9 @@ TEST(TestMpcPushWalk, RunMPC)
     ref_x[0] = ref_u[0];
   };
   DDPProblem::WeightParam weight_param;
-  weight_param.running_state << 0.0, 1e-4, 1e2, 1e-4;
-  weight_param.running_input << 1.0, 1e-4;
-  weight_param.terminal_state << 1.0, 1.0, 1.0, 1.0;
+  weight_param.running_state << 0.0, 1e-6, 1e2, 1e-6;
+  weight_param.running_input << 1e2, 1e-5;
+  weight_param.terminal_state << 1.0, 1e-1, 1.0, 1e-1;
   auto ddp_problem = std::make_shared<DDPProblem>(horizon_dt, state_eq, damper_func, ref_func, weight_param);
 
   // Generate dataset
