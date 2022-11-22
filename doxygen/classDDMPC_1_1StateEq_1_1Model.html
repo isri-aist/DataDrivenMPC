@@ -109,12 +109,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a1db67cde19ac0156c901c273c195895b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDDMPC_1_1StateEq_1_1Model.html#a1db67cde19ac0156c901c273c195895b">Model</a> (int state_dim, int input_dim, int middle_layer_dim)</td></tr>
 <tr class="memdesc:a1db67cde19ac0156c901c273c195895b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="classDDMPC_1_1StateEq_1_1Model.html#a1db67cde19ac0156c901c273c195895b">More...</a><br /></td></tr>
 <tr class="separator:a1db67cde19ac0156c901c273c195895b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a57b3a8477290e568a471a9985152e013"><td class="memItemLeft" align="right" valign="top">torch::Tensor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDDMPC_1_1StateEq_1_1Model.html#a57b3a8477290e568a471a9985152e013">forward</a> (torch::Tensor &amp;x, torch::Tensor &amp;u, bool enable_auto_grad=true)</td></tr>
-<tr class="memdesc:a57b3a8477290e568a471a9985152e013"><td class="mdescLeft">&#160;</td><td class="mdescRight">Forward model.  <a href="classDDMPC_1_1StateEq_1_1Model.html#a57b3a8477290e568a471a9985152e013">More...</a><br /></td></tr>
-<tr class="separator:a57b3a8477290e568a471a9985152e013"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5df0967cd720ed2b223e65ec6093f016"><td class="memItemLeft" align="right" valign="top">torch::Tensor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDDMPC_1_1StateEq_1_1Model.html#a5df0967cd720ed2b223e65ec6093f016">forward</a> (torch::Tensor &amp;x, torch::Tensor &amp;u, torch::Tensor &amp;grad_x, torch::Tensor &amp;grad_u, bool enable_auto_grad=true)</td></tr>
-<tr class="memdesc:a5df0967cd720ed2b223e65ec6093f016"><td class="mdescLeft">&#160;</td><td class="mdescRight">Forward model.  <a href="classDDMPC_1_1StateEq_1_1Model.html#a5df0967cd720ed2b223e65ec6093f016">More...</a><br /></td></tr>
-<tr class="separator:a5df0967cd720ed2b223e65ec6093f016"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f5ab1985ce1df5c435ec61f5bba66d9"><td class="memItemLeft" align="right" valign="top">torch::Tensor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDDMPC_1_1StateEq_1_1Model.html#a5f5ab1985ce1df5c435ec61f5bba66d9">forward</a> (torch::Tensor &amp;x, torch::Tensor &amp;u, bool enable_auto_grad=true, bool requires_grad_x=false, bool requires_grad_u=false)</td></tr>
+<tr class="memdesc:a5f5ab1985ce1df5c435ec61f5bba66d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Forward model.  <a href="classDDMPC_1_1StateEq_1_1Model.html#a5f5ab1985ce1df5c435ec61f5bba66d9">More...</a><br /></td></tr>
+<tr class="separator:a5f5ab1985ce1df5c435ec61f5bba66d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -134,6 +131,12 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a5479c4ee2606306a1bcbae3a42c1339e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e2c506ac1a564f7c02f461a11ea7758"><td class="memItemLeft" align="right" valign="top">torch::nn::Linear&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDDMPC_1_1StateEq_1_1Model.html#a3e2c506ac1a564f7c02f461a11ea7758">linear3_</a> = nullptr</td></tr>
 <tr class="separator:a3e2c506ac1a564f7c02f461a11ea7758"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e4df5836fe5414258912e4baeed098f"><td class="memItemLeft" align="right" valign="top">torch::Tensor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDDMPC_1_1StateEq_1_1Model.html#a7e4df5836fe5414258912e4baeed098f">grad_x_</a></td></tr>
+<tr class="memdesc:a7e4df5836fe5414258912e4baeed098f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gradient w.r.t. current state.  <a href="classDDMPC_1_1StateEq_1_1Model.html#a7e4df5836fe5414258912e4baeed098f">More...</a><br /></td></tr>
+<tr class="separator:a7e4df5836fe5414258912e4baeed098f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78c4b32978860c9c54fd87ee0f0689e1"><td class="memItemLeft" align="right" valign="top">torch::Tensor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDDMPC_1_1StateEq_1_1Model.html#a78c4b32978860c9c54fd87ee0f0689e1">grad_u_</a></td></tr>
+<tr class="memdesc:a78c4b32978860c9c54fd87ee0f0689e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gradient w.r.t. current input.  <a href="classDDMPC_1_1StateEq_1_1Model.html#a78c4b32978860c9c54fd87ee0f0689e1">More...</a><br /></td></tr>
+<tr class="separator:a78c4b32978860c9c54fd87ee0f0689e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class of neural network model for state equation. </p>
@@ -185,8 +188,8 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a57b3a8477290e568a471a9985152e013"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a57b3a8477290e568a471a9985152e013">&#9670;&nbsp;</a></span>forward() <span class="overload">[1/2]</span></h2>
+<a id="a5f5ab1985ce1df5c435ec61f5bba66d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f5ab1985ce1df5c435ec61f5bba66d9">&#9670;&nbsp;</a></span>forward()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -207,7 +210,19 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>enable_auto_grad</em> = <code>true</code>&#160;</td>
+          <td class="paramname"><em>enable_auto_grad</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>requires_grad_x</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>requires_grad_u</em> = <code>false</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -223,69 +238,13 @@ Public Attributes</h2></td></tr>
     <tr><td class="paramname">x</td><td>current state </td></tr>
     <tr><td class="paramname">u</td><td>current input </td></tr>
     <tr><td class="paramname">enable_auto_grad</td><td>whether to enable automatic gradient (default true) </td></tr>
+    <tr><td class="paramname">requires_grad_x</td><td>whether to require gradient w.r.t. current state (default false) </td></tr>
+    <tr><td class="paramname">requires_grad_u</td><td>whether to require gradient w.r.t. current input (default false) </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>next state </dd></dl>
-
-</div>
-</div>
-<a id="a5df0967cd720ed2b223e65ec6093f016"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5df0967cd720ed2b223e65ec6093f016">&#9670;&nbsp;</a></span>forward() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">torch::Tensor DDMPC::StateEq::Model::forward </td>
-          <td>(</td>
-          <td class="paramtype">torch::Tensor &amp;&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">torch::Tensor &amp;&#160;</td>
-          <td class="paramname"><em>u</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">torch::Tensor &amp;&#160;</td>
-          <td class="paramname"><em>grad_x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">torch::Tensor &amp;&#160;</td>
-          <td class="paramname"><em>grad_u</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>enable_auto_grad</em> = <code>true</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Forward model. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir"></td><td class="paramname">x</td><td>current state </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">u</td><td>current input </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">grad_x</td><td>gradient w.r.t. x (not calculated when the tensor size is zero) </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">grad_u</td><td>gradient w.r.t. u (not calculated when the tensor size is zero) </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">enable_auto_grad</td><td>whether to enable automatic gradient (default true) </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>next state </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>next state</dd></dl>
+<p>The required gradients are stored in the member variables grad_x_ and grad_u_. </p>
 
 </div>
 </div>
@@ -304,7 +263,43 @@ Public Attributes</h2></td></tr>
 
 <p>Whether to enable debug print. </p>
 
-<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00049">49</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00043">43</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
+
+</div>
+</div>
+<a id="a78c4b32978860c9c54fd87ee0f0689e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a78c4b32978860c9c54fd87ee0f0689e1">&#9670;&nbsp;</a></span>grad_u_</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">torch::Tensor DDMPC::StateEq::Model::grad_u_</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gradient w.r.t. current input. </p>
+
+<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00060">60</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
+
+</div>
+</div>
+<a id="a7e4df5836fe5414258912e4baeed098f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e4df5836fe5414258912e4baeed098f">&#9670;&nbsp;</a></span>grad_x_</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">torch::Tensor DDMPC::StateEq::Model::grad_x_</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gradient w.r.t. current state. </p>
+
+<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00057">57</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
 
 </div>
 </div>
@@ -322,7 +317,7 @@ Public Attributes</h2></td></tr>
 
 <p>Input dimension. </p>
 
-<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00055">55</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00049">49</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
 
 </div>
 </div>
@@ -340,7 +335,7 @@ Public Attributes</h2></td></tr>
 
 <p>Linear layers. </p>
 
-<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00058">58</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00052">52</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
 
 </div>
 </div>
@@ -356,7 +351,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00059">59</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00053">53</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
 
 </div>
 </div>
@@ -372,7 +367,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00060">60</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00054">54</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
 
 </div>
 </div>
@@ -390,7 +385,7 @@ Public Attributes</h2></td></tr>
 
 <p>State dimension. </p>
 
-<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00052">52</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StateEq_8h_source.html#l00046">46</a> of file <a class="el" href="StateEq_8h_source.html">StateEq.h</a>.</p>
 
 </div>
 </div>

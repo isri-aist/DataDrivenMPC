@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['apply_66',['apply',['../classDDMPC_1_1StandardScaler.html#af1a23790f1624e3d286c625a9802944c',1,'DDMPC::StandardScaler']]],
-  ['applyinv_67',['applyInv',['../classDDMPC_1_1StandardScaler.html#aad6ec3e1993d150220fbb06f65de9e30',1,'DDMPC::StandardScaler']]],
-  ['applyone_68',['applyOne',['../classDDMPC_1_1StandardScaler.html#ac1bfc5eace387dd73a9c00e62896d79f',1,'DDMPC::StandardScaler']]],
-  ['applyoneinv_69',['applyOneInv',['../classDDMPC_1_1StandardScaler.html#af1fb8397a3a0ea09cbc1eb2f695c4830',1,'DDMPC::StandardScaler']]]
+  ['apply_68',['apply',['../classDDMPC_1_1StandardScaler.html#af1a23790f1624e3d286c625a9802944c',1,'DDMPC::StandardScaler']]],
+  ['applyinv_69',['applyInv',['../classDDMPC_1_1StandardScaler.html#aad6ec3e1993d150220fbb06f65de9e30',1,'DDMPC::StandardScaler']]],
+  ['applyone_70',['applyOne',['../classDDMPC_1_1StandardScaler.html#ac1bfc5eace387dd73a9c00e62896d79f',1,'DDMPC::StandardScaler']]],
+  ['applyoneinv_71',['applyOneInv',['../classDDMPC_1_1StandardScaler.html#af1fb8397a3a0ea09cbc1eb2f695c4830',1,'DDMPC::StandardScaler']]]
 ];

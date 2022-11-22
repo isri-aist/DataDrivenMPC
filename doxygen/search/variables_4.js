@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['next_5fstate_5f_101',['next_state_',['../classDDMPC_1_1Data.html#a35eea6827ef1ade1517e1b81fa72ca11',1,'DDMPC::Data::next_state_()'],['../classDDMPC_1_1Dataset.html#a066e98ba16090a7d3c9735703c0698bd',1,'DDMPC::Dataset::next_state_()']]]
+  ['mean_5fvec_5f_103',['mean_vec_',['../classDDMPC_1_1StandardScaler.html#a3030d15f2aba34f9369bbbc93356a0fd',1,'DDMPC::StandardScaler']]],
+  ['model_5fptr_5f_104',['model_ptr_',['../classDDMPC_1_1StateEq.html#aed4e075e758d6a71d3bfcaecb2fac878',1,'DDMPC::StateEq']]]
 ];
