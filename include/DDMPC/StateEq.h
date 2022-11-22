@@ -26,23 +26,17 @@ public:
         \param x current state
         \param u current input
         \param enable_auto_grad whether to enable automatic gradient (default true)
+        \param requires_grad_x whether to require gradient w.r.t. current state (default false)
+        \param requires_grad_u whether to require gradient w.r.t. current input (default false)
         \returns next state
-     */
-    torch::Tensor forward(torch::Tensor & x, torch::Tensor & u, bool enable_auto_grad = true);
 
-    /** \brief Forward model.
-        \param x current state
-        \param u current input
-        \param[out] grad_x gradient w.r.t. x (not calculated when the tensor size is zero)
-        \param[out] grad_u gradient w.r.t. u (not calculated when the tensor size is zero)
-        \param enable_auto_grad whether to enable automatic gradient (default true)
-        \returns next state
+        The required gradients are stored in the member variables grad_x_ and grad_u_.
      */
     torch::Tensor forward(torch::Tensor & x,
                           torch::Tensor & u,
-                          torch::Tensor & grad_x,
-                          torch::Tensor & grad_u,
-                          bool enable_auto_grad = true);
+                          bool enable_auto_grad = true,
+                          bool requires_grad_x = false,
+                          bool requires_grad_u = false);
 
   public:
     //! Whether to enable debug print
@@ -58,6 +52,12 @@ public:
     torch::nn::Linear linear1_ = nullptr;
     torch::nn::Linear linear2_ = nullptr;
     torch::nn::Linear linear3_ = nullptr;
+
+    //! Gradient w.r.t. current state
+    torch::Tensor grad_x_;
+
+    //! Gradient w.r.t. current input
+    torch::Tensor grad_u_;
   };
 
   /** \brief Model pointer.

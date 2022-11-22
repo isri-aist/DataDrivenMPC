@@ -27,50 +27,41 @@ StateEq::Model::Model(int state_dim, int input_dim, int middle_layer_dim) : stat
   torch::cuda::is_available();
 }
 
-torch::Tensor StateEq::Model::forward(torch::Tensor & x, torch::Tensor & u, bool enable_auto_grad)
-{
-  torch::Tensor grad_x = torch::empty({});
-  torch::Tensor grad_u = torch::empty({});
-  return forward(x, u, grad_x, grad_u, enable_auto_grad);
-}
-
 torch::Tensor StateEq::Model::forward(torch::Tensor & x,
                                       torch::Tensor & u,
-                                      torch::Tensor & grad_x,
-                                      torch::Tensor & grad_u,
-                                      bool enable_auto_grad)
+                                      bool enable_auto_grad,
+                                      bool requires_grad_x,
+                                      bool requires_grad_u)
 {
   // Check dimensions
   assert(x.size(1) == state_dim_);
   assert(u.size(1) == input_dim_);
   assert(x.size(0) == u.size(0));
-  assert(grad_x.dim() == 0 || (grad_x.size(0) == state_dim_ && grad_x.size(1) == state_dim_));
-  assert(grad_u.dim() == 0 || (grad_u.size(0) == state_dim_ && grad_u.size(1) == input_dim_));
 
   // Setup gradient
-  bool requires_grad_x = (grad_x.dim() > 0);
-  x.set_requires_grad(requires_grad_x);
+  bool requires_grad = (requires_grad_x || requires_grad_u);
+  if(requires_grad)
+  {
+    enable_auto_grad = true;
+  }
+  torch::Tensor x_repeated;
+  torch::Tensor u_repeated;
+  if(requires_grad)
+  {
+    x_repeated = x.repeat({state_dim_, 1});
+    u_repeated = u.repeat({state_dim_, 1});
+  }
   if(requires_grad_x)
   {
-    auto & x_grad = x.mutable_grad();
-    if(x_grad.defined())
-    {
-      x_grad = x_grad.detach();
-      x_grad.zero_();
-    }
+    x_repeated.set_requires_grad(true);
+    assert(!x_repeated.mutable_grad().defined());
   }
-  bool requires_grad_u = (grad_u.dim() > 0);
-  u.set_requires_grad(requires_grad_u);
   if(requires_grad_u)
   {
-    auto & u_grad = u.mutable_grad();
-    if(u_grad.defined())
-    {
-      u_grad = u_grad.detach();
-      u_grad.zero_();
-    }
+    u_repeated.set_requires_grad(true);
+    assert(!u_repeated.mutable_grad().defined());
   }
-  if((requires_grad_x || requires_grad_u) && x.size(0) > 1)
+  if(requires_grad && x.size(0) > 1)
   {
     throw std::runtime_error("batch size should be 1 when requiring gradient. batch size: "
                              + std::to_string(x.size(0)));
@@ -84,36 +75,27 @@ torch::Tensor StateEq::Model::forward(torch::Tensor & x,
   }
 
   // Calculate network output
-  torch::Tensor xu = torch::cat({x, u}, 1);
+  torch::Tensor xu = requires_grad ? torch::cat({x_repeated, u_repeated}, 1) : torch::cat({x, u}, 1);
   xu = torch::relu(linear1_(xu));
   xu = torch::relu(linear2_(xu));
   torch::Tensor next_x = linear3_(xu);
 
   // Calculate gradient
-  if(requires_grad_x || requires_grad_u)
+  if(requires_grad)
   {
-    for(int i = 0; i < state_dim_; i++)
+    // See https://gist.github.com/sbarratt/37356c46ad1350d4c30aefbd488a4faa for Jacobian calculation
+    next_x.backward(torch::eye(state_dim_));
+    if(requires_grad_x)
     {
-      // Calculate backward of each element
-      torch::Tensor select = torch::zeros({1, state_dim_});
-      select.index({0, i}) = 1;
-      next_x.backward(select, true);
-
-      // Set gradient
-      if(requires_grad_x)
-      {
-        grad_x.index({i}) = x.grad().index({0});
-        x.mutable_grad().zero_();
-      }
-      if(requires_grad_u)
-      {
-        grad_u.index({i}) = u.grad().index({0});
-        u.mutable_grad().zero_();
-      }
+      grad_x_ = x_repeated.grad();
+    }
+    if(requires_grad_u)
+    {
+      grad_u_ = u_repeated.grad();
     }
   }
 
-  return next_x;
+  return requires_grad ? next_x.index({0}).view({1, -1}) : next_x;
 }
 
 Eigen::VectorXd StateEq::eval(const Eigen::VectorXd & x, const Eigen::VectorXd & u)
@@ -147,20 +129,20 @@ Eigen::VectorXd StateEq::eval(const Eigen::VectorXd & x,
   // Set tensor
   torch::Tensor x_tensor = toTorchTensor(x.transpose().cast<float>());
   torch::Tensor u_tensor = toTorchTensor(u.transpose().cast<float>());
-  torch::Tensor grad_x_tensor = grad_x.size() > 0 ? torch::empty({grad_x.rows(), grad_x.cols()}) : torch::empty({});
-  torch::Tensor grad_u_tensor = grad_u.size() > 0 ? torch::empty({grad_u.rows(), grad_u.cols()}) : torch::empty({});
+  bool requires_grad_x = grad_x.size() > 0;
+  bool requires_grad_u = grad_u.size() > 0;
 
   // Forward network
-  torch::Tensor next_x_tensor = model_ptr_->forward(x_tensor, u_tensor, grad_x_tensor, grad_u_tensor, true);
+  torch::Tensor next_x_tensor = model_ptr_->forward(x_tensor, u_tensor, false, requires_grad_x, requires_grad_u);
 
   // Set output variables
-  if(grad_x.size() > 0)
+  if(requires_grad_x)
   {
-    grad_x = toEigenMatrix(grad_x_tensor).cast<double>();
+    grad_x = toEigenMatrix(model_ptr_->grad_x_).cast<double>();
   }
-  if(grad_u.size() > 0)
+  if(requires_grad_u)
   {
-    grad_u = toEigenMatrix(grad_u_tensor).cast<double>();
+    grad_u = toEigenMatrix(model_ptr_->grad_u_).cast<double>();
   }
   return toEigenMatrix(next_x_tensor).transpose().cast<double>();
 }
