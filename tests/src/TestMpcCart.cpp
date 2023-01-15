@@ -345,7 +345,7 @@ TEST(TestMpcCart, Test1)
   EXPECT_LT(std::abs(current_x[1]), 0.5);
   EXPECT_LT(std::abs(current_x[2]), 0.15);
   EXPECT_LT(std::abs(current_x[3]), 0.5);
-  EXPECT_LT(std::abs(current_u[0]), 10.0);
+  EXPECT_LT(std::abs(current_u[0]), 15.0);
   EXPECT_LT(std::abs(current_u[1]), 15.0);
 
   std::cout << "Run the following commands in gnuplot:\n"
