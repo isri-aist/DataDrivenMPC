@@ -4,7 +4,6 @@ import time
 import numpy as np
 import pybullet
 import pybullet_data
-import matplotlib.pyplot as plt
 
 import rospy
 import rosbag
@@ -206,7 +205,7 @@ class SimTestMpcCart(object):
 
 
 def demo():
-    sim = SimTestMpcCart()
+    sim = SimTestMpcCart(True)
     sim.setState([0.3, 1.0, np.deg2rad(-10.0), 0.0])
 
     t = 0.0 # [sec]
