@@ -139,7 +139,7 @@ class SimTestMpcCart(object):
         pybullet.resetBasePositionAndOrientation(bodyUniqueId=self.cart_body_uid,
                                                  posObj=box_pos,
                                                  ornObj=box_rot)
-        linear_vel = np.array([p_dot, 0.0, 0.0]) + theta_dot * np.cross(np.array([0.0, 1.0, 0.0]), global_pos_from_cylinder_to_box)
+        linear_vel = np.array([p_dot, 0.0, 0.0]) + np.cross(np.array([0.0, theta_dot, 0.0]), global_pos_from_cylinder_to_box)
         angular_vel = np.array([0.0, theta_dot, 0.0])
         pybullet.resetBaseVelocity(objectUniqueId=self.cart_body_uid,
                                    linearVelocity=linear_vel,
