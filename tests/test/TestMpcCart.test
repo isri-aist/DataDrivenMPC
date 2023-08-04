@@ -1,6 +1,7 @@
 <launch>
   <arg name="no_exit" default="false" />
   <arg name="enable_gui" default="false" />
+  <arg name="mujoco" default="false" /> <!-- otherwise pybullet -->
 
   <test test-name="test_mpc_cart"
         pkg="data_driven_mpc" type="TestMpcCart" name="test_mpc_cart"
@@ -10,7 +11,14 @@
     </rosparam>
   </test>
 
-  <node pkg="data_driven_mpc" type="simTestMpcCart.py" name="sim_test_mpc_cart">
+  <node unless="$(arg mujoco)"
+        pkg="data_driven_mpc" type="simTestMpcCart.py" name="sim_test_mpc_cart">
+    <rosparam subst_value="true">
+      enable_gui: $(arg enable_gui)
+    </rosparam>
+  </node>
+  <node if="$(arg mujoco)"
+        pkg="data_driven_mpc" type="simTestMpcCartMujoco.py" name="sim_test_mpc_cart">
     <rosparam subst_value="true">
       enable_gui: $(arg enable_gui)
     </rosparam>
